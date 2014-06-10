@@ -7,6 +7,10 @@ SRCDIR=./src
 LIBDIR=./lib
 TSTDIR=./test
 
+# For file naming
+VERSION=$(shell date +%Y%m%d)
+DIST=hpack-$(VERSION)
+
 # Names of target libraries
 NAMES := huffman
 
@@ -20,6 +24,7 @@ huffman_SOURCE = $(SRCDIR)/huffman.c
 
 # Lists ...
 OBJECTS :=
+HEADERS :=
 TEST_OBJECTS :=
 TESTS :=
 
@@ -29,7 +34,7 @@ TESTS :=
 #
 
 .PHONY: all
-all: objs tests
+all: lib
 
 
 #
@@ -40,6 +45,7 @@ define LIBRARY_RULES
 
 ifeq (,$$(findstring $(1).o,$$(OBJECTS)))
 	OBJECTS += $(LIBDIR)/$(1).o
+	HEADERS += $(LIBDIR)/$(1).h
 endif
 $(LIBDIR)/$(1).o: $$($(1)_SOURCE) $$($(1)_HEADER)
 	$$(CC) $$(CFLAGS) -c $$< -o $$@
@@ -55,29 +61,42 @@ $(TSTDIR)/test-$(1): $(TSTDIR)/test-$(1).o $$($(1)_OBJECTS)
 endef
 $(foreach lib,$(NAMES),$(eval $(call LIBRARY_RULES,$(lib))))
 
-#
-# Headers for libraries
-#
 
 $(LIBDIR)/%.h: $(SRCDIR)/%.h
 	$(CP) $< $@
 
 
 #
-# Working with lists
+# The distribution
 #
 
-.PHONY: objs
-objs: $(OBJECTS)
+DISTFILE=$(DIST).tar.gz
+$(DISTFILE): lib
+	tar cvzf $(DISTFILE) --transform='s,$(LIBDIR)/,$(DIST)/,' $(HEADERS) $(OBJECTS)
 
-.PHONY: tests
+
+#
+# Non-standard targets
+#
+
+.PHONY: lib tests
+
+lib: $(HEADERS) $(OBJECTS)
+
 tests: $(TESTS)
 
-.PHONY: run-tests
-run-tests: tests
-	@$(foreach t,$(TESTS),echo "$(t)"; ./$(t); echo "$$? test failures";) echo "Done"
 
-.PHONY: clean
+#
+# Standard targets
+#
+
+.PHONY: dist check clean
+
+dist: $(DISTFILE)
+
+run-tests: tests
+	@$(foreach t,$(TESTS),echo "$(t)"; ./$(t) > /dev/null; echo "$$? test failures";) echo "Done"
+
 clean:
-	-rm $(TESTS) $(TEST_OBJECTS) $(OBJECTS)
+	-rm $(OBJECTS) $(HEADERS) $(TESTS) $(TEST_OBJECTS) $(DISTFILE)
 
