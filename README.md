@@ -1,4 +1,4 @@
-hpack
-=====
+HPACK - a HTTP/2 HPACK library
+==============================
 
-A HTTP/2 HPACK library
+
