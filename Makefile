@@ -94,7 +94,7 @@ tests: $(TESTS)
 
 dist: $(DISTFILE)
 
-run-tests: tests
+check: tests
 	@$(foreach t,$(TESTS),echo "$(t)"; ./$(t) > /dev/null; echo "$$? test failures";) echo "Done"
 
 clean:
