@@ -1,4 +1,7 @@
-HPACK - a HTTP/2 HPACK library
-==============================
+HPACK - HTTP/2 Compression
+==========================
 
+To build:
+
+`make dist`
 
