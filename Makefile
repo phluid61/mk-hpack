@@ -87,7 +87,7 @@ $(LIBDIR)/%.h: $(SRCDIR)/%.h
 
 DISTFILE=$(DIST).tar.gz
 $(DISTFILE): lib
-	tar cvzf $(DISTFILE) --transform='s,$(LIBDIR)/,$(DIST)/,' $(HEADERS) $(OBJECTS)
+	tar cvzf $(DISTFILE) --transform='s,$(LIBDIR)/,$(DIST)/,' $(HEADERS) $(LIBS)
 
 
 #
