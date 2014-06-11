@@ -71,7 +71,7 @@ int test_decode() {
 		dump(good_in[i].ptr, good_in[i].length, '<', 0);
 
 		/* aha! sending uninitialised buff to my function! */
-		result = huffman_decode(good_in[i].ptr, good_in[i].length, buff, n);
+		result = huffman_decode(good_in[i].ptr, good_in[i].length, NULL, buff, n, NULL);
 
 		if (huffman_decoder_error) {
 			printf(" * error: %d\n", huffman_decoder_error);
@@ -105,7 +105,7 @@ int test_decode() {
 		dump(bad_in[i].ptr, bad_in[i].length, '<', 0);
 
 		/* aha! sending uninitialised buff to my function! */
-		result = huffman_decode(bad_in[i].ptr, bad_in[i].length, buff, n);
+		result = huffman_decode(bad_in[i].ptr, bad_in[i].length, NULL, buff, n, NULL);
 
 		if (huffman_decoder_error) {
 			printf(" * error: %d\n", huffman_decoder_error);
@@ -157,7 +157,7 @@ int test_encode() {
 		dump(in[i].ptr, in[i].length, '<', 1);
 
 		/* aha! sending uninitialised buff to my function! */
-		result = huffman_encode(in[i].ptr, in[i].length, buff, n);
+		result = huffman_encode(in[i].ptr, in[i].length, NULL, buff, n, NULL);
 
 		if (huffman_encoder_error) {
 			printf(" * error: %d\n", huffman_encoder_error);

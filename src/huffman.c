@@ -1,6 +1,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "hpack_errors.h"
 
 uint32_t HuffmanDecodes[] = {
 	65538,
@@ -268,29 +269,33 @@ uint32_t HuffmanDecodes[] = {
 #define VALUE_OF(x) ((x)&0x7FFF)
 
 int huffman_decoder_error;
-#define ERROR_OVERFLOW  1
-#define ERROR_TRUNCATED 2
-#define ERROR_EOS       3
 
-size_t huffman_decode(uint8_t *huff, size_t bytesize, uint8_t *buff, size_t n) {
-	size_t count = 0;
+size_t huffman_decode(
+		uint8_t *huff, size_t bytesize, size_t *consumed,
+		uint8_t *buff, size_t n, size_t *produced
+) {
 	uint32_t tc = *HuffmanDecodes;
 	uint16_t tmp;
 	uint8_t byte, bc, mask;
 
-	huffman_decoder_error = 0;
+	size_t _p, _c;
+	if (!produced) { produced = &_p; }
+	if (!consumed) { consumed = &_c; }
+	*produced = *consumed = 0;
+
+	huffman_decoder_error = ERROR_NONE;
 
 	if (bytesize < 1) {
-		return 0;
+		return *produced;
 	}
 
 	if (n < 1) {
 		huffman_decoder_error = ERROR_OVERFLOW;
-		return 0;
+		return *produced;
 	}
 
 	while (bytesize > 0) {
-		byte = *huff; huff++; bytesize--;
+		byte = *huff; huff++; (*consumed)++; bytesize--;
 		bc = 0x80;   /* bit cursor */
 		mask = 0x7F; /* padding mask */
 		while (bc > 0) {
@@ -305,13 +310,13 @@ size_t huffman_decode(uint8_t *huff, size_t bytesize, uint8_t *buff, size_t n) {
 					huffman_decoder_error = ERROR_EOS;
 					return 0;
 				} else {
-					*buff = (uint8_t)(tmp); buff++; count++; n--;
+					*buff = (uint8_t)(tmp); buff++; (*produced)++; n--;
 					if (bytesize < 1 && (byte & mask) == mask) {
 						tc = 0;
 						goto done;
 					} else if (n < 1) {
 						huffman_decoder_error = ERROR_OVERFLOW;
-						return count;
+						return *produced;
 					} else {
 						tc = *HuffmanDecodes;
 					}
@@ -328,9 +333,9 @@ size_t huffman_decode(uint8_t *huff, size_t bytesize, uint8_t *buff, size_t n) {
 done:
 	if (tc) {
 		huffman_decoder_error = ERROR_TRUNCATED;
-		/*return count;*/
+		/*return *produced;*/
 	}
-	return count;
+	return *produced;
 }
 
 /* ^^^ Decoder | Encoder vvv */
@@ -602,8 +607,10 @@ hnode_t HuffmanCodes[] = {
 
 int huffman_encoder_error;
 
-size_t huffman_encode(uint8_t *str, size_t bytesize, uint8_t *buff, size_t n) {
-	size_t count = 0;
+size_t huffman_encode(
+		uint8_t *str, size_t bytesize, size_t *consumed,
+		uint8_t *buff, size_t n, size_t *produced
+) {
 	uint8_t shift;
 	uint64_t mask;
 	uint64_t val;
@@ -611,12 +618,20 @@ size_t huffman_encode(uint8_t *str, size_t bytesize, uint8_t *buff, size_t n) {
 
 	uint64_t bitq = 0; /* a queue */
 	uint64_t bitn = 0; /* depth of the queue */
+
+	size_t _p, _c;
+	if (!produced) { produced = &_p; }
+	if (!consumed) { consumed = &_c; }
+	*produced = *consumed = 0;
+
+	huffman_encoder_error = ERROR_NONE;
+
 	while (bytesize > 0) {
 		if (n < 1) {
 			huffman_encoder_error = ERROR_OVERFLOW;
-			return count;
+			return *produced;
 		}
-		hnode = HuffmanCodes[*str]; str++; bytesize--;
+		hnode = HuffmanCodes[*str]; str++; (*consumed)++; bytesize--;
 		bitq = (bitq << hnode.size) | hnode.bits; /* (max 33 bits wide) */
 		bitn += hnode.size;
 		/* canibalise the top bytes */
@@ -625,7 +640,7 @@ size_t huffman_encode(uint8_t *str, size_t bytesize, uint8_t *buff, size_t n) {
 			mask = 0xFF << shift;
 			val = (bitq & mask);
 			*buff = (uint8_t)(val >> shift); buff++; n--;
-			count++;
+			(*produced)++;
 			bitq ^= val;
 			bitn -= 8;
 		}
@@ -635,8 +650,8 @@ size_t huffman_encode(uint8_t *str, size_t bytesize, uint8_t *buff, size_t n) {
 		shift = 8 - bitn;
 		mask = (1 << shift) - 1;
 		*buff = ((bitq << shift) | mask); buff++; n--;
-		count++;
+		(*produced)++;
 	}
-	return count;
+	return *produced;
 }
 
