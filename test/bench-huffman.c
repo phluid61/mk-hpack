@@ -5,6 +5,8 @@
 
 #include "../lib/huffman.h"
 
+/*#define APPROXIMATE_CLOCK_DELAY*/
+
 typedef struct str {
 	size_t length;
 	uint8_t *ptr;
@@ -43,7 +45,7 @@ const uint8_t long_soup[COUNT_LONGS] = {
 };
 
 #define COUNT 10
-#define LENGTH 15
+#define LENGTH 100
 const str quads[COUNT];
 const str hquads[COUNT];
 const str octas[COUNT];
@@ -66,23 +68,49 @@ const str htotal = (str){N_PACKED, __htotal};
 const uint8_t buff[n];
 
 uint64_t bench_encode_str(const str *in) {
+#ifndef APPROXIMATE_CLOCK_DELAY
 	struct timespec start, end;
 
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
 	huffman_encode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
-	return (uint64_t)(end.tv_sec - start.tv_sec) * UINT64_C(1000000) + (uint64_t)(end.tv_nsec - start.tv_nsec);
+	return ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec) - ((uint64_t)(start.tv_sec) * UINT64_C(1000000) + (uint64_t)start.tv_nsec);
+#else
+	struct timespec start, end, foo;
+
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+	huffman_encode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &foo);
+
+	return ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec) - ((uint64_t)(start.tv_sec) * UINT64_C(1000000) + (uint64_t)start.tv_nsec)
+		-
+		((uint64_t)(foo.tv_sec) * UINT64_C(1000000) + (uint64_t)foo.tv_nsec) - ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec);
+#endif
 }
 
 uint64_t bench_decode_str(const str *in) {
+#ifndef APPROXIMATE_CLOCK_DELAY
 	struct timespec start, end;
 
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
 	huffman_decode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
-	return (uint64_t)(end.tv_sec - start.tv_sec) * UINT64_C(1000000) + (uint64_t)(end.tv_nsec - start.tv_nsec);
+	return ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec) - ((uint64_t)(start.tv_sec) * UINT64_C(1000000) + (uint64_t)start.tv_nsec);
+#else
+	struct timespec start, end, foo;
+
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+	huffman_decode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &foo);
+
+	return ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec) - ((uint64_t)(start.tv_sec) * UINT64_C(1000000) + (uint64_t)start.tv_nsec)
+		-
+		((uint64_t)(foo.tv_sec) * UINT64_C(1000000) + (uint64_t)foo.tv_nsec) - ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec);
+#endif
 }
 
 uint64_t bench_encode_strs(const str *in) {
@@ -137,14 +165,14 @@ int main() {
 
 	printf("\nquads = bytes that encode to 4 bits\noctas = bytes that encode to 8 bits\nshorts = bytes that encode to <= 8 bits\nlongs = bytes that encode to >8 bits\n\n");
 	printf("%d strings per category\n%d bytes per string\n\n", COUNT, LENGTH);
-	printf(" Encode quads    %llu ns\n", (long long unsigned int)bench_encode_strs(quads));
-	printf(" Encode octas    %llu ns\n", (long long unsigned int)bench_encode_strs(octas));
-	printf(" Encode shorts   %llu ns\n", (long long unsigned int)bench_encode_strs(shorts));
-	printf(" Encode longs    %llu ns\n", (long long unsigned int)bench_encode_strs(longs));
-	printf(" Decode quads    %llu ns\n", (long long unsigned int)bench_decode_strs(hquads));
-	printf(" Decode octas    %llu ns\n", (long long unsigned int)bench_decode_strs(hoctas));
-	printf(" Decode shorts   %llu ns\n", (long long unsigned int)bench_decode_strs(hshorts));
-	printf(" Decode longs    %llu ns\n", (long long unsigned int)bench_decode_strs(hlongs));
+	x=bench_encode_strs( quads );printf(" Encode quads   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
+	x=bench_encode_strs( octas );printf(" Encode octas   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
+	x=bench_encode_strs( shorts);printf(" Encode shorts  %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
+	x=bench_encode_strs( longs );printf(" Encode longs   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
+	x=bench_decode_strs(hquads );printf(" Decode quads   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
+	x=bench_decode_strs(hoctas );printf(" Decode octas   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
+	x=bench_decode_strs(hshorts);printf(" Decode shorts  %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
+	x=bench_decode_strs(hlongs );printf(" Decode longs   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
 	printf("\nRandom permutation of all 256 bytes\n\n");
 	x=bench_encode_str(& total);printf(" Encode all bytes  %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x,((double)x)/256.0);
 	x=bench_decode_str(&htotal);printf(" Decode all bytes  %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x,((double)x)/256.0);
