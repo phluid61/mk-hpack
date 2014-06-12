@@ -1,3 +1,5 @@
 *.o
 test-huffman
 test-hpack
+bench-huffman
+bench-hpack

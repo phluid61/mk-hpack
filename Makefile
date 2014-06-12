@@ -1,7 +1,9 @@
 .SUFFIXES:
 CC=/usr/bin/gcc
-CFLAGS=-Wall -O1 -Wl,-O1
-OBJ_CFLAGS=-fPIC -fvisibility=hidden -Wl,--relocatable -Wl,--no-undefined
+#CFLAGS=-Wall -O1 -Wl,-O1
+#OBJ_CFLAGS=-fPIC -fvisibility=hidden -Wl,--relocatable -Wl,--no-undefined
+CFLAGS=-Wall
+OBJ_CFLAGS=-fPIC -Wl,--relocatable
 CP=/bin/cp
 
 SRCDIR=./src
@@ -34,6 +36,8 @@ LIBS :=
 HEADERS :=
 TEST_OBJECTS :=
 TESTS :=
+BENCH_OBJECTS :=
+BENCHES :=
 
 
 #
@@ -73,6 +77,16 @@ TESTS += $(TSTDIR)/test-$(1)
 $(TSTDIR)/test-$(1): $(TSTDIR)/test-$(1).o $$($(1)_OBJECTS)
 	$$(CC) $$(CFLAGS) $$^ -o $$@
 
+# Benchmark object
+BENCH_OBJECTS += $(TSTDIR)/bench-$(1).o
+$(TSTDIR)/bench-$(1).o: $(TSTDIR)/bench-$(1).c $$($(1)_HEADERS)
+	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
+
+# Benchmark program
+BENCHES += $(TSTDIR)/bench-$(1)
+$(TSTDIR)/bench-$(1): $(TSTDIR)/bench-$(1).o $$($(1)_OBJECTS)
+	$$(CC) $$(CFLAGS) -Wl,--no-as-needed -Wl,-lrt $$^ -o $$@
+
 endef
 $(foreach lib,$(NAMES),$(eval $(call LIBRARY_RULES,$(lib))))
 
@@ -94,18 +108,22 @@ $(DISTFILE): lib
 # Non-standard targets
 #
 
-.PHONY: lib tests
+.PHONY: lib tests benchmarks bench
 
 lib: $(HEADERS) $(LIBS)
 
 tests: $(TESTS)
 
+benchmarks: $(BENCHES)
+
+bench: benchmarks
+	@$(foreach b,$(BENCHES),echo "$(b)"; ./$(b)) echo "Done"
 
 #
 # Standard targets
 #
 
-.PHONY: dist check clean
+.PHONY: dist check clean distclean
 
 dist: $(DISTFILE)
 
@@ -113,5 +131,8 @@ check: tests
 	@$(foreach t,$(TESTS),echo "$(t)"; ./$(t) > /dev/null; echo "$$? test failures";) echo "Done"
 
 clean:
-	-rm $(OBJECTS) $(LIBS) $(HEADERS) $(TESTS) $(TEST_OBJECTS) $(DISTFILE)
+	-rm $(OBJECTS) $(LIBS) $(HEADERS) $(TESTS) $(TEST_OBJECTS)
+
+distclean:
+	-rm $(DISTFILE)
 
