@@ -55,7 +55,7 @@ if (hpack_decoder_error) {
 
 ```c
 #include <stdint.h>
-#include "lib/hpack.h"
+#include "lib/huffman.h"
 
 #define STRING_LENGTH 16
 uint8_t string[STRING_LENGH] = "www.example.com";
@@ -74,7 +74,7 @@ if (huffman_encoder_error) {
 
 ```c
 #include <stdint.h>
-#include "lib/hpack.h"
+#include "lib/huffman.h"
 
 #define CODE_LENGTH 16
 uint8_t code[CODE_LENGH] = "\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFFXYZ";
