@@ -67,6 +67,8 @@ const str htotal = (str){N_PACKED, __htotal};
 #define n (size_t)1024
 const uint8_t buff[n];
 
+#define nanoseconds(tm) ((uint64_t)((tm).tv_sec) * UINT64_C(1000000) + (uint64_t)(tm).tv_nsec)
+
 uint64_t bench_encode_str(const str *in) {
 #ifndef APPROXIMATE_CLOCK_DELAY
 	struct timespec start, end;
@@ -75,7 +77,7 @@ uint64_t bench_encode_str(const str *in) {
 	huffman_encode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
-	return ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec) - ((uint64_t)(start.tv_sec) * UINT64_C(1000000) + (uint64_t)start.tv_nsec);
+	return nanoseconds(end) - nanoseconds(start);
 #else
 	struct timespec start, end, foo;
 
@@ -84,9 +86,7 @@ uint64_t bench_encode_str(const str *in) {
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &foo);
 
-	return ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec) - ((uint64_t)(start.tv_sec) * UINT64_C(1000000) + (uint64_t)start.tv_nsec)
-		-
-		((uint64_t)(foo.tv_sec) * UINT64_C(1000000) + (uint64_t)foo.tv_nsec) - ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec);
+	return (nanoseconds(end) - nanoseconds(start)) - (nanoseconds(foo) - nanoseconds(end));
 #endif
 }
 
@@ -98,7 +98,7 @@ uint64_t bench_decode_str(const str *in) {
 	huffman_decode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
-	return ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec) - ((uint64_t)(start.tv_sec) * UINT64_C(1000000) + (uint64_t)start.tv_nsec);
+	return nanoseconds(end) - nanoseconds(start);
 #else
 	struct timespec start, end, foo;
 
@@ -107,9 +107,7 @@ uint64_t bench_decode_str(const str *in) {
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &foo);
 
-	return ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec) - ((uint64_t)(start.tv_sec) * UINT64_C(1000000) + (uint64_t)start.tv_nsec)
-		-
-		((uint64_t)(foo.tv_sec) * UINT64_C(1000000) + (uint64_t)foo.tv_nsec) - ((uint64_t)(end.tv_sec) * UINT64_C(1000000) + (uint64_t)end.tv_nsec);
+	return (nanoseconds(end) - nanoseconds(start)) - (nanoseconds(foo) - nanoseconds(end));
 #endif
 }
 
