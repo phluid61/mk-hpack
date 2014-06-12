@@ -13,7 +13,7 @@ TSTDIR=./test
 
 # For file naming
 VERSION=$(shell date +%Y%m%d)
-DIST=hpack-$(VERSION)
+DIST=mkhpack-$(VERSION)
 
 # Names of target libraries
 NAMES := huffman hpack
