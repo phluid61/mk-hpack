@@ -1,11 +1,12 @@
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
+#include "benchmark.h"
 #include "../lib/huffman.h"
 
-/*#define APPROXIMATE_CLOCK_DELAY*/
 
 typedef struct str {
 	size_t length;
@@ -44,8 +45,8 @@ const uint8_t long_soup[COUNT_LONGS] = {
 	254, 255,
 };
 
-#define COUNT 10
-#define LENGTH 100
+#define COUNT 1000
+#define LENGTH (1024*4)
 const str quads[COUNT];
 const str hquads[COUNT];
 const str octas[COUNT];
@@ -64,51 +65,21 @@ const str htotal = (str){N_PACKED, __htotal};
 
 #define WORST_PACKED (LENGTH*26)
 
-#define n (size_t)1024
+#define n (size_t)(WORST_PACKED*2)
 const uint8_t buff[n];
 
-#define nanoseconds(tm) ((uint64_t)((tm).tv_sec) * UINT64_C(1000000) + (uint64_t)(tm).tv_nsec)
+
 
 uint64_t bench_encode_str(const str *in) {
-#ifndef APPROXIMATE_CLOCK_DELAY
-	struct timespec start, end;
-
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+	bench_start();
 	huffman_encode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
-
-	return nanoseconds(end) - nanoseconds(start);
-#else
-	struct timespec start, end, foo;
-
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-	huffman_encode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &foo);
-
-	return (nanoseconds(end) - nanoseconds(start)) - (nanoseconds(foo) - nanoseconds(end));
-#endif
+	return bench_end();
 }
 
 uint64_t bench_decode_str(const str *in) {
-#ifndef APPROXIMATE_CLOCK_DELAY
-	struct timespec start, end;
-
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+	bench_start();
 	huffman_decode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
-
-	return nanoseconds(end) - nanoseconds(start);
-#else
-	struct timespec start, end, foo;
-
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-	huffman_decode(in->ptr, in->length, NULL, (uint8_t*)buff, n, NULL);
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &foo);
-
-	return (nanoseconds(end) - nanoseconds(start)) - (nanoseconds(foo) - nanoseconds(end));
-#endif
+	return bench_end();
 }
 
 uint64_t bench_encode_strs(const str *in) {
@@ -160,6 +131,8 @@ int main() {
 	generate((uint8_t*)octa_soup, COUNT_OCTAS, (str*)octas, (str*)hoctas);
 	generate((uint8_t*)short_soup,COUNT_SHORTS,(str*)shorts,(str*)hshorts);
 	generate((uint8_t*)long_soup, COUNT_LONGS, (str*)longs, (str*)hlongs);
+
+	init_bench();
 
 	printf("\nquads = bytes that encode to 4 bits\noctas = bytes that encode to 8 bits\nshorts = bytes that encode to <= 8 bits\nlongs = bytes that encode to >8 bits\n\n");
 	printf("%d strings per category\n%d bytes per string\n\n", COUNT, LENGTH);

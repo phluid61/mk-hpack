@@ -1,0 +1,3 @@
+*.o
+bench-huffman
+bench-hpack
