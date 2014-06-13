@@ -10,6 +10,10 @@ SRCDIR=./src
 OBJDIR=./obj
 LIBDIR=./lib
 TSTDIR=./test
+BENCHDIR=./bench
+
+#BENCHLIB=benchmark-gettime
+BENCHLIB=benchmark-custom
 
 # For file naming
 VERSION=$(shell date +%Y%m%d)
@@ -78,13 +82,13 @@ $(TSTDIR)/test-$(1): $(TSTDIR)/test-$(1).o $$($(1)_OBJECTS)
 	$$(CC) $$(CFLAGS) $$^ -o $$@
 
 # Benchmark object
-BENCH_OBJECTS += $(TSTDIR)/bench-$(1).o
-$(TSTDIR)/bench-$(1).o: $(TSTDIR)/bench-$(1).c $$($(1)_HEADERS)
+BENCH_OBJECTS += $(BENCHDIR)/bench-$(1).o
+$(BENCHDIR)/bench-$(1).o: $(BENCHDIR)/bench-$(1).c $$($(1)_HEADERS)
 	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
 
 # Benchmark program
-BENCHES += $(TSTDIR)/bench-$(1)
-$(TSTDIR)/bench-$(1): $(TSTDIR)/bench-$(1).o $$($(1)_OBJECTS)
+BENCHES += $(BENCHDIR)/bench-$(1)
+$(BENCHDIR)/bench-$(1): $(BENCHDIR)/bench-$(1).o $(BENCHDIR)/$(BENCHLIB).o $$($(1)_OBJECTS)
 	$$(CC) $$(CFLAGS) -Wl,--no-as-needed -Wl,-lrt $$^ -o $$@
 
 endef
@@ -93,6 +97,11 @@ $(foreach lib,$(NAMES),$(eval $(call LIBRARY_RULES,$(lib))))
 
 $(LIBDIR)/%.h: $(SRCDIR)/%.h
 	$(CP) $< $@
+
+# Standard benchmark library/object
+BENCH_OBJECTS += $(BENCHDIR)/$(BENCHLIB).o
+$(BENCHDIR)/$(BENCHLIB).o: $(BENCHDIR)/$(BENCHLIB).c $(BENCHDIR)/benchmark.h
+	$(CC) $(OBJ_CFLAGS) $(CFLAGS) -c $< -o $@
 
 
 #
@@ -117,7 +126,7 @@ tests: $(TESTS)
 benchmarks: $(BENCHES)
 
 bench: benchmarks
-	@$(foreach b,$(BENCHES),echo "$(b)"; ./$(b)) echo "Done"
+	@$(foreach b,$(BENCHES),echo "$(b)"; ./$(b) 2> /dev/null) echo "Done"
 
 #
 # Standard targets
@@ -131,7 +140,7 @@ check: tests
 	@$(foreach t,$(TESTS),echo "$(t)"; ./$(t) > /dev/null; echo "$$? test failures";) echo "Done"
 
 clean:
-	-rm $(OBJECTS) $(LIBS) $(HEADERS) $(TESTS) $(TEST_OBJECTS)
+	-rm $(OBJECTS) $(LIBS) $(HEADERS) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
 
 distclean:
 	-rm $(DISTFILE)
