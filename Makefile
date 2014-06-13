@@ -13,7 +13,9 @@ TSTDIR=./test
 BENCHDIR=./bench
 
 #BENCHLIB=benchmark-gettime
+#BENCHFLAGS=-Wl,--no-as-needed -Wl,-lrt
 BENCHLIB=benchmark-custom
+BENCHFLAGS=-Wl,--no-as-needed
 
 # For file naming
 VERSION=$(shell date +%Y%m%d)
@@ -89,14 +91,16 @@ $(BENCHDIR)/bench-$(1).o: $(BENCHDIR)/bench-$(1).c $$($(1)_HEADERS)
 # Benchmark program
 BENCHES += $(BENCHDIR)/bench-$(1)
 $(BENCHDIR)/bench-$(1): $(BENCHDIR)/bench-$(1).o $(BENCHDIR)/$(BENCHLIB).o $$($(1)_OBJECTS)
-	$$(CC) $$(CFLAGS) -Wl,--no-as-needed -Wl,-lrt $$^ -o $$@
+	$$(CC) $$(CFLAGS) $$(BENCHFLAGS) $$^ -o $$@
 
 endef
 $(foreach lib,$(NAMES),$(eval $(call LIBRARY_RULES,$(lib))))
 
 
+# Library header
 $(LIBDIR)/%.h: $(SRCDIR)/%.h
 	$(CP) $< $@
+
 
 # Standard benchmark library/object
 BENCH_OBJECTS += $(BENCHDIR)/$(BENCHLIB).o
