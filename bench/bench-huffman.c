@@ -7,6 +7,8 @@
 #include "benchmark.h"
 #include "../lib/huffman.h"
 
+#define LLU(i) ((long long unsigned int)(i))
+#define LF(f,d) ((long double)(f)/(d))
 
 typedef struct str {
 	size_t length;
@@ -45,7 +47,7 @@ const uint8_t long_soup[COUNT_LONGS] = {
 	254, 255,
 };
 
-#define COUNT 1000
+#define COUNT 100
 #define LENGTH (1024*4)
 const str quads[COUNT];
 const str hquads[COUNT];
@@ -57,7 +59,7 @@ const str longs[COUNT];
 const str hlongs[COUNT];
 
 #define N_BYTES 256
-#define N_PACKED 613
+#define N_PACKED 612
 uint8_t __total[N_BYTES+1] = {0};
 uint8_t __htotal[N_PACKED+1] = {0};
 const str total = (str){N_BYTES, __total};
@@ -88,7 +90,7 @@ uint64_t bench_encode_strs(const str *in) {
 	while (i--) {
 		ns += bench_encode_str(&(in[i]));
 	}
-	return ns / (uint64_t)COUNT;
+	return ns;
 }
 
 uint64_t bench_decode_strs(const str *in) {
@@ -97,7 +99,7 @@ uint64_t bench_decode_strs(const str *in) {
 	while (i--) {
 		ns += bench_decode_str(&(in[i]));
 	}
-	return ns / (uint64_t)COUNT;
+	return ns;
 }
 
 void generate(uint8_t *soup, int num, str *out, str *hout) {
@@ -108,11 +110,12 @@ void generate(uint8_t *soup, int num, str *out, str *hout) {
 		for (j = 0; j < LENGTH; j++) {
 			out[i].ptr[j] = soup[rand() % num];
 		}
+		out[i].length = j;
 		hout[i].length = huffman_encode(out[i].ptr, out[i].length, NULL, hout[i].ptr, WORST_PACKED, NULL);
 	}
 }
 void generate_total() {
-	int i = COUNT, j; char x[256] = {0};
+	int i, j; char x[256] = {0};
 	for (i = 0; i < 256; i++) {
 		do {
 			j = rand() % 256;
@@ -131,22 +134,23 @@ int main() {
 	generate((uint8_t*)octa_soup, COUNT_OCTAS, (str*)octas, (str*)hoctas);
 	generate((uint8_t*)short_soup,COUNT_SHORTS,(str*)shorts,(str*)hshorts);
 	generate((uint8_t*)long_soup, COUNT_LONGS, (str*)longs, (str*)hlongs);
+	generate_total();
 
 	init_bench();
 
 	printf("\nquads = bytes that encode to 4 bits\noctas = bytes that encode to 8 bits\nshorts = bytes that encode to <= 8 bits\nlongs = bytes that encode to >8 bits\n\n");
 	printf("%d strings per category\n%d bytes per string\n\n", COUNT, LENGTH);
-	x=bench_encode_strs( quads );printf(" Encode quads   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
-	x=bench_encode_strs( octas );printf(" Encode octas   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
-	x=bench_encode_strs( shorts);printf(" Encode shorts  %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
-	x=bench_encode_strs( longs );printf(" Encode longs   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
-	x=bench_decode_strs(hquads );printf(" Decode quads   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
-	x=bench_decode_strs(hoctas );printf(" Decode octas   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
-	x=bench_decode_strs(hshorts);printf(" Decode shorts  %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
-	x=bench_decode_strs(hlongs );printf(" Decode longs   %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x, ((double)x)/(COUNT*LENGTH));
+	x=bench_encode_strs( quads );printf(" Encode quads  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
+	x=bench_encode_strs( octas );printf(" Encode octas  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
+	x=bench_encode_strs( shorts);printf(" Encode shorts : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
+	x=bench_encode_strs( longs );printf(" Encode longs  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
+	x=bench_decode_strs(hquads );printf(" Decode quads  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
+	x=bench_decode_strs(hoctas );printf(" Decode octas  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
+	x=bench_decode_strs(hshorts);printf(" Decode shorts : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
+	x=bench_decode_strs(hlongs );printf(" Decode longs  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	printf("\nRandom permutation of all 256 bytes\n\n");
-	x=bench_encode_str(& total);printf(" Encode all bytes  %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x,((double)x)/256.0);
-	x=bench_decode_str(&htotal);printf(" Decode all bytes  %5llu ns [%7.3f ns / byte]\n", (long long unsigned int)x,((double)x)/256.0);
+	x=bench_encode_str(& total);printf(" Encode all bytes : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,256.0));
+	x=bench_decode_str(&htotal);printf(" Decode all bytes : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,256.0));
 
 	while (i--) {
 		free(quads[i].ptr); free(hquads[i].ptr);
