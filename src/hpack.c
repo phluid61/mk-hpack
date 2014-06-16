@@ -8,9 +8,7 @@
 
 #define PREFIX_MASK(b) (uint8_t)((UINT16_C(1)<<(b))-1)
 
-int hpack_encoder_error;
-
-size_t hpack_encode_int(
+int hpack_encode_int(
 		HPACK_INT_T i, size_t prefix_bits, uint8_t prefix,
 		uint8_t *buff, size_t n, size_t *produced
 ) {
@@ -20,50 +18,42 @@ size_t hpack_encode_int(
 	if (!produced) { produced = &_p; }
 	*produced = 0;
 
-	hpack_encoder_error = ERROR_NONE;
-
 	if (n < 1) {
-		hpack_encoder_error = ERROR_OVERFLOW;
-		return *produced;
+		return ERROR_OVERFLOW;
 	}
 
 	if (prefix_bits < 1 || prefix_bits > 8) {
-		hpack_encoder_error = ERROR_BAD_PREFIX;
-		return *produced;
+		return ERROR_BAD_PREFIX;
 	}
 
 	prefix_mask = PREFIX_MASK(prefix_bits);
 	if ((prefix & prefix_mask) != 0) {
-		hpack_encoder_error = ERROR_BAD_PREFIX;
-		return *produced;
+		return ERROR_BAD_PREFIX;
 	}
 
 	if (i < prefix_mask) {
 		*buff = (prefix | i);
-		return (*produced = 1);
+		*produced = 1;
+		return NO_ERROR;
 	} else {
 		*buff = (prefix | prefix_mask); buff++; (*produced)++; n--;
 		i -= prefix_mask;
 		while (i >= 0x80) {
 			if (n < 1) {
-				hpack_encoder_error = ERROR_OVERFLOW;
-				return *produced;
+				return ERROR_OVERFLOW;
 			}
 			*buff = ((i & 0x7F) | 0x80); buff++; (*produced)++; n--;
 			i >>= 7;
 		}
 	}
 	if (n < 1) {
-		hpack_encoder_error = ERROR_OVERFLOW;
-		return *produced;
+		return ERROR_OVERFLOW;
 	}
 	*buff = (uint8_t)i; (*produced)++;
-	return *produced;
+	return ERROR_NONE;
 }
 
-int hpack_decoder_error;
-
-HPACK_INT_T hpack_decode_int(
+int hpack_decode_int(
 		uint8_t *buff, size_t bytesize, size_t *consumed,
 		size_t prefix_bits,
 		HPACK_INT_T *i, uint8_t *prefix
@@ -77,16 +67,12 @@ HPACK_INT_T hpack_decode_int(
 	if (!consumed) { consumed = &_c; }
 	*consumed = 0;
 
-	hpack_decoder_error = ERROR_NONE;
-
 	if (bytesize < 1) {
-		hpack_encoder_error = ERROR_TRUNCATED;
-		return MAX_HPACK_INT;
+		return ERROR_TRUNCATED;
 	}
 
 	if (prefix_bits < 1 || prefix_bits > 8) {
-		hpack_encoder_error = ERROR_BAD_PREFIX;
-		return MAX_HPACK_INT;
+		return ERROR_BAD_PREFIX;
 	}
 
 	prefix_mask = PREFIX_MASK(prefix_bits);
@@ -101,14 +87,12 @@ HPACK_INT_T hpack_decode_int(
 		shift = 1;
 		while (1) {
 			if (bytesize < 1) {
-				hpack_encoder_error = ERROR_TRUNCATED;
-				return MAX_HPACK_INT;
+				return ERROR_TRUNCATED;
 			}
 			b = *buff; buff++; (*consumed)++; bytesize--;
 			add = ((b & 0x7F) * shift);
 			if ((MAX_HPACK_INT - (*i)) < add) {
-				hpack_encoder_error = ERROR_OVERFLOW;
-				return MAX_HPACK_INT;
+				return ERROR_OVERFLOW;
 			}
 			*i += add;
 			shift <<= 7;
@@ -118,6 +102,6 @@ HPACK_INT_T hpack_decode_int(
 		}
 	}
 
-	return *i;
+	return ERROR_NONE;
 }
 

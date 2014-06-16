@@ -111,7 +111,7 @@ void generate(uint8_t *soup, int num, str *out, str *hout) {
 			out[i].ptr[j] = soup[rand() % num];
 		}
 		out[i].length = j;
-		hout[i].length = huffman_encode(out[i].ptr, out[i].length, NULL, hout[i].ptr, WORST_PACKED, NULL);
+		huffman_encode(out[i].ptr, out[i].length, NULL, hout[i].ptr, WORST_PACKED, &(hout[i].length));
 	}
 }
 void generate_total() {
