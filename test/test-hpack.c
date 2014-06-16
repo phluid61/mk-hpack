@@ -56,7 +56,7 @@ int test_decode() {
 		0,0,0,0,0,0,
 		0xF0,
 	};
-	const uint64_t good_out[] = {
+	const HPACK_INT_T good_out[] = {
 		0x00,
 		0x01,
 		0xFE,
@@ -73,9 +73,11 @@ int test_decode() {
 		0x10100101,
 	};
 
+	int hpack_decoder_error;
+
 	char match; int retval=0;
 	size_t i;
-	size_t result; uint8_t pf;
+	HPACK_INT_T result; uint8_t pf;
 
 	printf("**\n** DECODER\n**\n\n");
 
@@ -84,7 +86,7 @@ int test_decode() {
 		dump(good_in[i].ptr, good_in[i].length, '<', 0);
 
 		/* aha! sending uninitialised buff to my function! */
-		result = hpack_decode_int(good_in[i].ptr, good_in[i].length, NULL, good_pb[i], NULL, &pf);
+		hpack_decoder_error = hpack_decode_int(good_in[i].ptr, good_in[i].length, NULL, good_pb[i], &result, &pf);
 
 		if (hpack_decoder_error) {
 			printf(" * error: %d\n", hpack_decoder_error);
@@ -115,7 +117,7 @@ int test_decode() {
 
 int test_encode() {
 	const size_t good_n = 12;
-	const uint64_t good_in[] = {
+	const HPACK_INT_T good_in[] = {
 		0x00,
 		0x01,
 		0xFE,
@@ -159,7 +161,7 @@ int test_encode() {
 	};
 
 	const size_t bad_n = 4;
-	const uint64_t bad_in[] = {
+	const HPACK_INT_T bad_in[] = {
 		0,
 		0,
 
@@ -167,8 +169,8 @@ int test_encode() {
 		0,
 	};
 	const size_t bad_pb[] = {
-		0, /* good_pb < 1 */
-		9, /* good_pb > 8 */
+		0, /* < 1 */
+		9, /* > 8 */
 
 		8,
 		7,
@@ -181,12 +183,14 @@ int test_encode() {
 		0xC0, /* prefix sets masked bits */
 	};
 
+	int hpack_encoder_error;
+
 	const size_t n = 32;
 	uint8_t buff[33]; /*n+1*/
 
 	char match; int retval=0;
 	size_t i,j;
-	size_t result;
+	size_t length;
 
 	printf("**\n** ENCODER\n**\n\n");
 
@@ -195,15 +199,15 @@ int test_encode() {
 		printf(" < %08x [%3d]; %d | %02x\n", (unsigned int)(good_in[i]), (int)(good_in[i]), (int)(good_pb[i]), good_pf[i]);
 
 		/* aha! sending uninitialised buff to my function! */
-		result = hpack_encode_int(good_in[i], good_pb[i], good_pf[i], buff, n, NULL);
+		hpack_encoder_error = hpack_encode_int(good_in[i], good_pb[i], good_pf[i], buff, n, &length);
 
 		if (hpack_encoder_error) {
 			printf(" * error: %d\n", hpack_encoder_error);
 		}
 
-		if (result == good_out[i].length) {
+		if (length == good_out[i].length) {
 			match = 1;
-			for (j = 0; j < result; j++) {
+			for (j = 0; j < length; j++) {
 				if (buff[j] != good_out[i].ptr[j]) {
 					printf(" * mismatch at byte %d: got %02x, expected %02x\n", (int)j, buff[j], good_out[i].ptr[j]);
 					match = 0;
@@ -212,11 +216,11 @@ int test_encode() {
 			}
 		} else {
 			match = 0;
-			printf(" * returned %d, expected %d\n", (int)result, (int)good_out[i].length);
+			printf(" * returned %d, expected %d\n", (int)length, (int)good_out[i].length);
 		}
 
 		/*if (!match) {*/
-			dump(buff, result, '>', 0);
+			dump(buff, length, '>', 0);
 			dump(good_out[i].ptr, good_out[i].length, '~', 0);
 		/*}*/
 		printf("\n");
@@ -229,13 +233,13 @@ int test_encode() {
 		printf(" < %08x [%3d]; %d | %02x\n", (unsigned int)(bad_in[i]), (int)(bad_in[i]), (int)(bad_pb[i]), bad_pf[i]);
 
 		/* aha! sending uninitialised buff to my function! */
-		result = hpack_encode_int(bad_in[i], bad_pb[i], bad_pf[i], buff, n, NULL);
+		hpack_encoder_error = hpack_encode_int(bad_in[i], bad_pb[i], bad_pf[i], buff, n, &length);
 
 		if (hpack_encoder_error) {
 			printf(" * error: %d\n", hpack_encoder_error);
 		}
 
-		/*dump(buff, result, '>', 1);*/
+		/*dump(buff, length, '>', 1);*/
 		printf("\n");
 
 		retval += (!hpack_encoder_error);

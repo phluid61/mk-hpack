@@ -268,8 +268,6 @@ uint32_t HuffmanDecodes[] = {
 #define IS_INT(x) (((x)&0x8000)==0x8000)
 #define VALUE_OF(x) ((x)&0x7FFF)
 
-int huffman_decoder_error;
-
 size_t huffman_decode(
 		uint8_t *huff, size_t bytesize, size_t *consumed,
 		uint8_t *buff, size_t n, size_t *produced
@@ -283,15 +281,12 @@ size_t huffman_decode(
 	if (!consumed) { consumed = &_c; }
 	*produced = *consumed = 0;
 
-	huffman_decoder_error = ERROR_NONE;
-
 	if (bytesize < 1) {
-		return *produced;
+		return ERROR_NONE;
 	}
 
 	if (n < 1) {
-		huffman_decoder_error = ERROR_OVERFLOW;
-		return *produced;
+		return ERROR_OVERFLOW;
 	}
 
 	while (bytesize > 0) {
@@ -307,16 +302,14 @@ size_t huffman_decode(
 			if (IS_INT(tmp)) {
 				tmp = VALUE_OF(tmp);
 				if (tmp > 0xFF) {
-					huffman_decoder_error = ERROR_EOS;
-					return 0;
+					return ERROR_EOS;
 				} else {
 					*buff = (uint8_t)(tmp); buff++; (*produced)++; n--;
 					if (bytesize < 1 && (byte & mask) == mask) {
 						tc = 0;
 						goto done;
 					} else if (n < 1) {
-						huffman_decoder_error = ERROR_OVERFLOW;
-						return *produced;
+						return ERROR_OVERFLOW;
 					} else {
 						tc = *HuffmanDecodes;
 					}
@@ -332,10 +325,9 @@ size_t huffman_decode(
 	}
 done:
 	if (tc) {
-		huffman_decoder_error = ERROR_TRUNCATED;
-		/*return *produced;*/
+		return ERROR_TRUNCATED;
 	}
-	return *produced;
+	return ERROR_NONE;
 }
 
 /* ^^^ Decoder | Encoder vvv */
@@ -605,8 +597,6 @@ hnode_t HuffmanCodes[] = {
 	(hnode_t){0x1ffffdc, 25},
 };
 
-int huffman_encoder_error;
-
 size_t huffman_encode(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t *buff, size_t n, size_t *produced
@@ -624,12 +614,9 @@ size_t huffman_encode(
 	if (!consumed) { consumed = &_c; }
 	*produced = *consumed = 0;
 
-	huffman_encoder_error = ERROR_NONE;
-
 	while (bytesize > 0) {
 		if (n < 1) {
-			huffman_encoder_error = ERROR_OVERFLOW;
-			return *produced;
+			return ERROR_OVERFLOW;
 		}
 		hnode = HuffmanCodes[*str]; str++; (*consumed)++; bytesize--;
 		bitq = (bitq << hnode.size) | hnode.bits; /* (max 33 bits wide) */
@@ -652,6 +639,5 @@ size_t huffman_encode(
 		*buff = ((bitq << shift) | mask); buff++; n--;
 		(*produced)++;
 	}
-	return *produced;
+	return ERROR_NONE;
 }
-
