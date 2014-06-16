@@ -18,7 +18,7 @@ int hpack_encode_int(
 	if (!produced) { produced = &_p; }
 	*produced = 0;
 
-	if (n < 1) {
+	if (buff && n < 1) {
 		return ERROR_OVERFLOW;
 	}
 
@@ -32,24 +32,31 @@ int hpack_encode_int(
 	}
 
 	if (i < prefix_mask) {
-		*buff = (prefix | i);
+		if (buff) { *buff = (prefix | i); }
 		*produced = 1;
 		return NO_ERROR;
 	} else {
-		*buff = (prefix | prefix_mask); buff++; (*produced)++; n--;
+		if (buff) { *buff = (prefix | prefix_mask); buff++; n--; }
+		(*produced)++;
 		i -= prefix_mask;
 		while (i >= 0x80) {
-			if (n < 1) {
-				return ERROR_OVERFLOW;
+			if (buff) {
+				if (n < 1) {
+					return ERROR_OVERFLOW;
+				}
+				*buff = ((i & 0x7F) | 0x80); buff++; n--;
 			}
-			*buff = ((i & 0x7F) | 0x80); buff++; (*produced)++; n--;
+			(*produced)++;
 			i >>= 7;
 		}
 	}
-	if (n < 1) {
-		return ERROR_OVERFLOW;
+	if (buff) {
+		if (n < 1) {
+			return ERROR_OVERFLOW;
+		}
+		*buff = (uint8_t)i;
 	}
-	*buff = (uint8_t)i; (*produced)++;
+	(*produced)++;
 	return ERROR_NONE;
 }
 
