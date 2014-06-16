@@ -23,6 +23,27 @@ int huffman_encode(
 );
 
 /**
+ * Calculate the length of a Huffman-encode a sequence of bytes.
+ *
+ * @param uint8_t* str      pointer to start of bytes to encode
+ * @param size_t   bytesize number of bytes to encode
+ * @return size_t number of encoded bytes
+ */
+size_t huffman_length(
+		uint8_t *str, size_t bytesize
+);
+
+size_t huffman_length(
+		uint8_t *str, size_t bytesize
+) {
+	size_t result = 7;
+	while (bytesize > 0) {
+		result += HuffmanCodes[*str]; str++; bytesize--;
+	}
+	return (result / 8);
+}
+
+/**
  * Decode a sequence of Huffman-encoded bytes.
  *
  * If an error occurs, returns one of the following values:
