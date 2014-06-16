@@ -17,7 +17,9 @@ inline uint64_t bench_end() {
 }
 
 void init_bench() {
+#if 0
 	unsigned long cpu_mask = 1; /* bind to cpu 0 */
 	sched_setaffinity(0, sizeof(cpu_mask), &cpu_mask);
+#endif
 }
 
