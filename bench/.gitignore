@@ -1,3 +1,4 @@
 *.o
+*.exe
 bench-huffman
 bench-hpack
