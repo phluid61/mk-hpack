@@ -33,16 +33,6 @@ size_t huffman_length(
 		uint8_t *str, size_t bytesize
 );
 
-size_t huffman_length(
-		uint8_t *str, size_t bytesize
-) {
-	size_t result = 7;
-	while (bytesize > 0) {
-		result += HuffmanCodes[*str]; str++; bytesize--;
-	}
-	return (result / 8);
-}
-
 /**
  * Decode a sequence of Huffman-encoded bytes.
  *
