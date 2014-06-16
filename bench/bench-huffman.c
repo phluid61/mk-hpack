@@ -5,7 +5,7 @@
 #include <time.h>
 
 #include "benchmark.h"
-#include "../lib/huffman.h"
+#include "../lib/hpack.h"
 
 #define LLU(i) ((long long unsigned int)(i))
 #define LF(f,d) ((long double)(f)/(d))
