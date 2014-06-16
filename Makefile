@@ -33,7 +33,7 @@ hpack_OBJECTS = $(OBJDIR)/hpack.o
 # Headers & Sources for building target libraries
 huffman_HEADER = $(SRCDIR)/huffman.h
 huffman_SOURCE = $(SRCDIR)/huffman.c
-hpack_HEADER = $(SRCDIR)/hpack.h
+hpack_HEADER = $(SRCDIR)/hpack.h $(SRCDIR)/huffman.h
 hpack_SOURCE = $(SRCDIR)/hpack.c
 
 # Lists ...
