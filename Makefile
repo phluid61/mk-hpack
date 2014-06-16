@@ -1,10 +1,4 @@
-.SUFFIXES:
-CC=/usr/bin/gcc
-#CFLAGS=-Wall -O1 -Wl,-O1
-#OBJ_CFLAGS=-fPIC -fvisibility=hidden -Wl,--relocatable -Wl,--no-undefined
-CFLAGS=-Wall
-OBJ_CFLAGS=-fPIC -Wl,--relocatable
-CP=/bin/cp
+include Makefile.inc
 
 SRCDIR=./src
 OBJDIR=./obj
@@ -22,29 +16,24 @@ VERSION=$(shell date +%Y%m%d)
 DIST=mkhpack-$(VERSION)
 
 # Names of target libraries
-NAMES := huffman hpack
+NAMES = hpack
 
-# Headers & Objects for using target libraries
-huffman_HEADERS = $(LIBDIR)/huffman.h
-huffman_OBJECTS = $(OBJDIR)/huffman.o
-hpack_HEADERS = $(LIBDIR)/hpack.h
-hpack_OBJECTS = $(OBJDIR)/hpack.o
+TEST_NAMES  = huffman hpack
+BENCH_NAMES = huffman
 
 # Headers & Sources for building target libraries
-huffman_HEADER = $(SRCDIR)/huffman.h
-huffman_SOURCE = $(SRCDIR)/huffman.c
-hpack_HEADER = $(SRCDIR)/hpack.h $(SRCDIR)/huffman.h
+hpack_HEADER = $(SRCDIR)/hpack.h
 hpack_SOURCE = $(SRCDIR)/hpack.c
 
 # Lists ...
 OBJECTS :=
-LIBS :=
 HEADERS :=
-TEST_OBJECTS :=
-TESTS :=
-BENCH_OBJECTS :=
-BENCHES :=
+LIBS    :=
 
+TEST_OBJECTS  :=
+BENCH_OBJECTS :=
+TESTS   :=
+BENCHES :=
 
 #
 # Default rule
@@ -53,60 +42,31 @@ BENCHES :=
 .PHONY: all
 all: lib
 
-
 #
-# Libraries and tests
+# Libraries
 #
 
 define LIBRARY_RULES
-
-# Object
-ifeq (,$$(findstring $(1).o,$$(OBJECTS)))
+ifeq (,$$(findstring /$(1).o,$$(OBJECTS)))
 	OBJECTS += $(OBJDIR)/$(1).o
 	HEADERS += $(LIBDIR)/$(1).h
 	LIBS += $(LIBDIR)/$(1).so
 endif
+# Object
 $(OBJDIR)/$(1).o: $$($(1)_SOURCE) $$($(1)_HEADER)
 	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
-
 # Shared object
 $(LIBDIR)/$(1).so: $(OBJDIR)/$(1).o
 	$$(CC) -shared $$< -o $$@
-
-# Test object
-TEST_OBJECTS += $(TSTDIR)/test-$(1).o
-$(TSTDIR)/test-$(1).o: $(TSTDIR)/test-$(1).c $$($(1)_HEADERS)
-	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
-
-# Test program
-TESTS += $(TSTDIR)/test-$(1)
-$(TSTDIR)/test-$(1): $(TSTDIR)/test-$(1).o $$($(1)_OBJECTS)
-	$$(CC) $$(CFLAGS) $$^ -o $$@
-
-# Benchmark object
-BENCH_OBJECTS += $(BENCHDIR)/bench-$(1).o
-$(BENCHDIR)/bench-$(1).o: $(BENCHDIR)/bench-$(1).c $$($(1)_HEADERS)
-	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
-
-# Benchmark program
-BENCHES += $(BENCHDIR)/bench-$(1)
-$(BENCHDIR)/bench-$(1): $(BENCHDIR)/bench-$(1).o $(BENCHDIR)/$(BENCHLIB).o $$($(1)_OBJECTS)
-	$$(CC) $$(CFLAGS) $$(BENCHFLAGS) $$^ -o $$@
-
 endef
 $(foreach lib,$(NAMES),$(eval $(call LIBRARY_RULES,$(lib))))
 
-
+#
 # Library header
+#
+
 $(LIBDIR)/%.h: $(SRCDIR)/%.h
 	$(CP) $< $@
-
-
-# Standard benchmark library/object
-BENCH_OBJECTS += $(BENCHDIR)/$(BENCHLIB).o
-$(BENCHDIR)/$(BENCHLIB).o: $(BENCHDIR)/$(BENCHLIB).c $(BENCHDIR)/benchmark.h
-	$(CC) $(OBJ_CFLAGS) $(CFLAGS) -c $< -o $@
-
 
 #
 # The distribution
@@ -116,32 +76,55 @@ DISTFILE=$(DIST).tar.gz
 $(DISTFILE): lib
 	tar cvzf $(DISTFILE) --transform='s,$(LIBDIR)/,$(DIST)/,' $(HEADERS) $(LIBS)
 
+#
+# Tests
+#
+
+define TEST_RULES
+ifeq (,$$(findstring $(1),$$(TESTS)))
+	TEST_OBJECTS += $(1).o
+	TESTS        += $(1)
+endif
+# Object
+$(1).o: $(1).c $$(HEADERS)
+	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
+# Exe
+$(1): $(1).o $$(OBJECTS)
+	$$(CC) $$^ -o $$@
+endef
+$(foreach tst,$(TEST_NAMES),$(eval $(call TEST_RULES,$(TSTDIR)/test-$(tst))))
 
 #
-# Non-standard targets
+# Benchmarks
 #
 
-.PHONY: lib tests benchmarks bench
+BENCH_OBJECTS += $(BENCHDIR)/$(BENCHLIB).o
+$(BENCHDIR)/$(BENCHLIB).o: $(BENCHDIR)/$(BENCHLIB).c
+	$(CC) $(OBJ_CFLAGS) $(CFLAGS) $(BENCH_FLAGS) -c $< -o $@
+
+define BENCH_RULES
+ifeq (,$$(findstring $(1),$$(BENCHES)))
+	BENCH_OBJECTS += $(1).o
+	BENCHES       += $(1)
+endif
+# Object
+$(1).o: $(1).c $$(HEADERS)
+	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
+# Exe
+$(1): $(1).o $$(OBJECTS) $(BENCHDIR)/$(BENCHLIB).o
+	$$(CC) $$^ -o $$@
+endef
+$(foreach bnch,$(BENCH_NAMES),$(eval $(call BENCH_RULES,$(BENCHDIR)/bench-$(bnch))))
+
+#
+# Typical targets
+#
+
+.PHONY: lib dist clean distclean
 
 lib: $(HEADERS) $(LIBS)
 
-tests: $(TESTS)
-
-benchmarks: $(BENCHES)
-
-bench: benchmarks
-	@$(foreach b,$(BENCHES),echo "$(b)"; ./$(b) 2> /dev/null) echo "Done"
-
-#
-# Standard targets
-#
-
-.PHONY: dist check clean distclean
-
 dist: $(DISTFILE)
-
-check: tests
-	@$(foreach t,$(TESTS),echo "$(t)"; ./$(t) > /dev/null; echo "$$? test failures";) echo "Done"
 
 clean:
 	-rm $(OBJECTS) $(LIBS) $(HEADERS) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
@@ -149,3 +132,17 @@ clean:
 distclean:
 	-rm $(DISTFILE)
 
+
+.PHONY: tests check benchmarks bench
+
+tests: $(TESTS)
+check: tests
+	@$(foreach t,$(TESTS),echo "$(t)"; ./$(t) > /dev/null; echo "$$? test failures";) echo "Done"
+
+benchmarks: $(BENCHES)
+bench: benchmarks
+	@$(foreach b,$(BENCHES),echo "$(b)"; ./$(b) 2> /dev/null) echo "Done"
+
+.PHONY: always
+always:
+	true

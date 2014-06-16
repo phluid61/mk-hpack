@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../lib/huffman.h"
+#include "../lib/hpack.h"
 
 typedef struct str {
 	size_t length;
