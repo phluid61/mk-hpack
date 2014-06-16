@@ -53,3 +53,71 @@ int hpack_decode_int(
 		HPACK_INT_T *i, uint8_t *prefix
 );
 
+
+
+
+/**
+ * Encode a raw (not Huffman-encoded) string.
+ *
+ * @param uint8_t* str      pointer to start of bytes to encode
+ * @param size_t   bytesize number of bytes to encode
+ * @param size_t * consumed used to report number of bytes read, may be NULL
+ * @param uint8_t* buff     pointer to start of output buffer
+ * @param size_t   n        number of bytes allocated to output buffer
+ * @param size_t * produced used to report number of bytes written
+ * @return 
+ */
+int hpack_encode_raw_str(
+		uint8_t *str, size_t bytesize, size_t *consumed,
+		uint8_t *buff, size_t n, size_t *produced
+);
+
+/**
+ * Encode a Huffman-encoded string.
+ *
+ * @param uint8_t* str      pointer to start of bytes to encode
+ * @param size_t   bytesize number of bytes to encode
+ * @param size_t * consumed used to report number of bytes read, may be NULL
+ * @param uint8_t* buff     pointer to start of output buffer
+ * @param size_t   n        number of bytes allocated to output buffer
+ * @param size_t * produced used to report number of bytes written
+ * @return 
+ */
+int hpack_encode_huff_str(
+		uint8_t *str, size_t bytesize, size_t *consumed,
+		uint8_t *buff, size_t n, size_t *produced
+);
+
+/**
+ * Encode a string. Applies Huffman encoding first, if that results
+ * in a shorter output.
+ *
+ * @param uint8_t* str      pointer to start of bytes to encode
+ * @param size_t   bytesize number of bytes to encode
+ * @param size_t * consumed used to report number of bytes read, may be NULL
+ * @param uint8_t* buff     pointer to start of output buffer
+ * @param size_t   n        number of bytes allocated to output buffer
+ * @param size_t * produced used to report number of bytes written
+ * @return 
+ */
+int hpack_encode_str(
+		uint8_t *str, size_t bytesize, size_t *consumed,
+		uint8_t *buff, size_t n, size_t *produced
+);
+
+
+/**
+ * Decode a string.
+ *
+ * @param uint8_t* str      pointer to start of bytes to decode
+ * @param size_t   bytesize number of bytes to decode
+ * @param size_t * consumed used to report number of bytes read, may be NULL
+ * @param uint8_t* buff     pointer to start of output buffer
+ * @param size_t   n        number of bytes allocated to output buffer
+ * @param size_t * produced used to report number of bytes written
+ * @return 
+ */
+int hpack_decode_str(
+	uint8_t *str, size_t bytesize, size_t *consumed,
+	uint8_t *buff, size_t n, size_t *produced
+);
