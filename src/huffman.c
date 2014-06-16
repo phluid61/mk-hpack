@@ -607,7 +607,7 @@ size_t huffman_encode(
 	hnode_t hnode;
 
 	uint64_t bitq = 0; /* a queue */
-	uint64_t bitn = 0; /* depth of the queue */
+	uint8_t  bitn = 0; /* depth of the queue */
 
 	size_t _p, _c;
 	if (!produced) { produced = &_p; }
@@ -624,7 +624,7 @@ size_t huffman_encode(
 		/* canibalise the top bytes */
 		while (bitn >= 8) {
 			shift = bitn - 8;
-			mask = 0xFF << shift;
+			mask = UINT64_C(0xFF) << shift;
 			val = (bitq & mask);
 			*buff = (uint8_t)(val >> shift); buff++; n--;
 			(*produced)++;
