@@ -285,7 +285,7 @@ size_t huffman_decode(
 		return ERROR_NONE;
 	}
 
-	if (n < 1) {
+	if (buff && n < 1) {
 		return ERROR_OVERFLOW;
 	}
 
@@ -304,11 +304,15 @@ size_t huffman_decode(
 				if (tmp > 0xFF) {
 					return ERROR_EOS;
 				} else {
-					*buff = (uint8_t)(tmp); buff++; (*produced)++; n--;
+					if (buff) {
+						*buff = (uint8_t)(tmp); buff++;
+						n--;
+					}
+					(*produced)++;
 					if (bytesize < 1 && (byte & mask) == mask) {
 						tc = 0;
 						goto done;
-					} else if (n < 1) {
+					} else if (buff && n < 1) {
 						return ERROR_OVERFLOW;
 					} else {
 						tc = *HuffmanDecodes;
@@ -615,7 +619,7 @@ size_t huffman_encode(
 	*produced = *consumed = 0;
 
 	while (bytesize > 0) {
-		if (n < 1) {
+		if (buff && n < 1) {
 			return ERROR_OVERFLOW;
 		}
 		hnode = HuffmanCodes[*str]; str++; (*consumed)++; bytesize--;
@@ -623,20 +627,24 @@ size_t huffman_encode(
 		bitn += hnode.size;
 		/* canibalise the top bytes */
 		while (bitn >= 8) {
-			shift = bitn - 8;
-			mask = UINT64_C(0xFF) << shift;
-			val = (bitq & mask);
-			*buff = (uint8_t)(val >> shift); buff++; n--;
+			if (buff) {
+				shift = bitn - 8;
+				mask = UINT64_C(0xFF) << shift;
+				val = (bitq & mask);
+				*buff = (uint8_t)(val >> shift); buff++; n--;
+				bitq ^= val;
+			}
 			(*produced)++;
-			bitq ^= val;
 			bitn -= 8;
 		}
 	}
 	/* pad with EOS (incidentally all 1s) */
 	if (bitn > 0) {
-		shift = 8 - bitn;
-		mask = (1 << shift) - 1;
-		*buff = ((bitq << shift) | mask); buff++; n--;
+		if (buff) {
+			shift = 8 - bitn;
+			mask = (1 << shift) - 1;
+			*buff = ((bitq << shift) | mask); buff++; n--;
+		}
 		(*produced)++;
 	}
 	return ERROR_NONE;
