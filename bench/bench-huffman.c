@@ -240,7 +240,9 @@ int main() {
 	generate_huff((str*)hosts, HOST_COUNT, (str*)hhosts);
 	generate_huff((str*)paths, PATH_COUNT, (str*)hpaths);
 #endif
+#if SAMPLE_BYTES
 	generate_total();
+#endif
 
 	init_bench();
 
@@ -251,55 +253,56 @@ int main() {
 	printf(" bytes that encode to 4 bits\n");
 	x=bench_encode_strs( quads ,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	y=bench_decode_strs(hquads ,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
+	printf("          [%10.2Lfx]\n", LF(y,x));
 
 	printf(" bytes that encode to 8 bits\n");
 	x=bench_encode_strs( octas ,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	y=bench_decode_strs(hoctas ,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
+	printf("          [%10.2Lfx]\n", LF(y,x));
 
 	printf(" bytes that encode to <= 8 bits\n");
 	x=bench_encode_strs( shorts,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	y=bench_decode_strs(hshorts,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
+	printf("          [%10.2Lfx]\n", LF(y,x));
 
 	printf(" bytes that encode to >8 bits\n");
 	x=bench_encode_strs( longs ,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	y=bench_decode_strs(hlongs ,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
+	printf("          [%10.2Lfx]\n", LF(y,x));
 #endif
 #if SAMPLE_HEX
 	printf("hex characters\n");
 	printf(" mix of upper- and lower-case\n");
 	x=bench_encode_strs( hexes ,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	y=bench_decode_strs(hhexes ,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
+	printf("          [%10.2Lfx]\n", LF(y,x));
 	printf(" upper-case only\n");
 	x=bench_encode_strs( HEXes ,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	y=bench_decode_strs(hHEXes ,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
+	printf("          [%10.2Lfx]\n", LF(y,x));
 
 	printf("base-64 characters\n");
 	x=bench_encode_strs( b_64s ,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	y=bench_decode_strs(hb_64s ,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
+	printf("          [%10.2Lfx]\n", LF(y,x));
 #endif
 #if SAMPLE_REAL_URIS
 	printf("\nTypical URLs\n");
-	printf(" hosts\n");
+	printf(" hosts [%d strings, %d bytes]\n", HOST_COUNT, HOST_LENGTH);
 	x=bench_encode_strs( hosts,HOST_COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,HOST_LENGTH));
 	y=bench_decode_strs(hhosts,HOST_COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,HOST_LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
-	printf(" paths\n");
+	printf("          [%10.2Lfx]\n", LF(y,x));
+	printf(" paths [%d strings, %d bytes]\n", PATH_COUNT, PATH_LENGTH);
 	x=bench_encode_strs( paths,PATH_COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,PATH_LENGTH));
 	y=bench_decode_strs(hpaths,PATH_COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,PATH_LENGTH));
-	printf("           %10.2Lf\n", LF(y,x));
+	printf("          [%10.2Lfx]\n", LF(y,x));
 #endif
+#if SAMPLE_BYTES
 	printf("\nRandom permutation of all 256 bytes\n\n");
 	x=bench_encode_str(& total); printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,256.0));
 	y=bench_decode_str(&htotal); printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,256.0));
-	printf("           %10.2Lf\n", LF(y,x));
-
+	printf("          [%10.2Lfx]\n", LF(y,x));
+#endif
 	return 0;
 }
 
