@@ -24,6 +24,8 @@ void dump(uint8_t* buff, size_t n, char token, char literal) {
 #endif
 }
 
+#define dump_str(str,token,literal) dump((str).ptr,(str).length,(token),(literal))
+
 int test_decode() {
 	const size_t good_n = 8;
 	const str good_in[] = {
@@ -66,7 +68,7 @@ int test_decode() {
 
 	for (i = 0; i < good_n; i++) {
 		printf("Test %d:\n", (int)i);
-		dump(good_in[i].ptr, good_in[i].length, '<', 0);
+		dump_str(good_in[i], '<', 0);
 
 		/* aha! sending uninitialised buff to my function! */
 		huffman_decoder_error = huffman_decode(good_in[i].ptr, good_in[i].length, NULL, buff, n, &length);
@@ -91,7 +93,7 @@ int test_decode() {
 
 		/*if (!match) {*/
 			dump(buff, length, '>', 1);
-			dump(good_out[i].ptr, good_out[i].length, '~', 1);
+			dump_str(good_out[i], '~', 1);
 		/*}*/
 		printf("\n");
 
@@ -100,7 +102,7 @@ int test_decode() {
 
 	for (i = 0; i < bad_n; i++) {
 		printf("Test %d:\n", (int)(good_n+i));
-		dump(bad_in[i].ptr, bad_in[i].length, '<', 0);
+		dump_str(bad_in[i], '<', 0);
 
 		/* aha! sending uninitialised buff to my function! */
 		huffman_decoder_error = huffman_decode(bad_in[i].ptr, bad_in[i].length, NULL, buff, n, &length);
@@ -154,7 +156,7 @@ int test_encode() {
 
 	for (i = 0; i < in_n; i++) {
 		printf("Test %d:\n", (int)i);
-		dump(in[i].ptr, in[i].length, '<', 1);
+		dump_str(in[i], '<', 1);
 
 		/* aha! sending uninitialised buff to my function! */
 		huffman_encoder_error = huffman_encode(in[i].ptr, in[i].length, NULL, buff, n, &length);
@@ -179,7 +181,7 @@ int test_encode() {
 
 		/*if (!match) {*/
 			dump(buff, length, '>', 0);
-			dump(out[i].ptr, out[i].length, '~', 0);
+			dump_str(out[i], '~', 0);
 		/*}*/
 		printf("\n");
 

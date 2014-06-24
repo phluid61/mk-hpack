@@ -24,6 +24,8 @@ void dump(uint8_t* buff, size_t n, char token, char literal) {
 #endif
 }
 
+#define dump_str(str,token,literal) dump((str).ptr,(str).length,(token),(literal))
+
 int test_decode_int() {
 	const size_t good_n = 12;
 	const str good_in[] = {
@@ -79,7 +81,7 @@ int test_decode_int() {
 
 	for (i = 0; i < good_n; i++) {
 		printf("Test %d:\n", (int)i);
-		dump(good_in[i].ptr, good_in[i].length, '<', 0);
+		dump_str(good_in[i], '<', 0);
 
 		/* aha! sending uninitialised buff to my function! */
 		hpack_decoder_error = hpack_decode_int(good_in[i].ptr, good_in[i].length, NULL, good_pb[i], &result, &pf);
@@ -217,7 +219,7 @@ int test_encode_int() {
 
 		/*if (!match) {*/
 			dump(buff, length, '>', 0);
-			dump(good_out[i].ptr, good_out[i].length, '~', 0);
+			dump_str(good_out[i], '~', 0);
 		/*}*/
 		printf("\n");
 
