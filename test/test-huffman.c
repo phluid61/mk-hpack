@@ -3,11 +3,7 @@
 #include <stdlib.h>
 
 #include "../lib/hpack.h"
-
-typedef struct str {
-	size_t length;
-	uint8_t *ptr;
-} str;
+#include "../str.h"
 
 void dump(uint8_t* buff, size_t n, char token, char literal) {
 	size_t j;
@@ -31,30 +27,30 @@ void dump(uint8_t* buff, size_t n, char token, char literal) {
 int test_decode() {
 	const size_t good_n = 8;
 	const str good_in[] = {
-		((str){0, (uint8_t*)""}),
-		((str){1, (uint8_t*)"\xEC"}),
-		((str){1, (uint8_t*)"G"}),
-		((str){2, (uint8_t*)"B?"}),
-		((str){2, (uint8_t*)"\x10\x20"}),
-		((str){4, (uint8_t*)"\xFF\xFF\xFF\xFF"}),
-		((str){12, (uint8_t*)"\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFF"}),
-		((str){17, (uint8_t*)"\x3B\xFC\xD7\x65\x99\xBD\xAE\x6F\x3B\x8F\x5B\x71\x76\x6B\x56\xE4\xFF"}),
+		STR_C(0, ""),
+		STR_C(1, "\xEC"),
+		STR_C(1, "G"),
+		STR_C(2, "B?"),
+		STR_C(2, "\x10\x20"),
+		STR_C(4, "\xFF\xFF\xFF\xFF"),
+		STR_C(12, "\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFF"),
+		STR_C(17, "\x3B\xFC\xD7\x65\x99\xBD\xAE\x6F\x3B\x8F\x5B\x71\x76\x6B\x56\xE4\xFF"),
 	};
 	const str good_out[] = {
-		((str){0, (uint8_t*)""}),
-		((str){1, (uint8_t*)";"}),
-		((str){1, (uint8_t*)"3"}),
-		((str){2, (uint8_t*)"33"}),
-		((str){4, (uint8_t*)"1020"}),
-		((str){1, (uint8_t*)"\xA3"}),
-		((str){15, (uint8_t*)"www.example.com"}),
-		((str){22, (uint8_t*)"/.well-known/host-meta"}),
+		STR_C(0, ""),
+		STR_C(1, ";"),
+		STR_C(1, "3"),
+		STR_C(2, "33"),
+		STR_C(4, "1020"),
+		STR_C(1, "\xA3"),
+		STR_C(15, "www.example.com"),
+		STR_C(22, "/.well-known/host-meta"),
 	};
 
 	const size_t bad_n = 2;
 	const str bad_in[] = {
-		((str){1, (uint8_t*)"\xE0"}), /* \x1E would be 'f', but wrong padding */
-		((str){4, (uint8_t*)"\xFF\xFF\xEE\x7F"}), /* valid encoding of EOS */
+		STR_C(1, "\xE0"), /* \x1E would be 'f', but wrong padding */
+		STR_C(4, "\xFF\xFF\xEE\x7F"), /* valid encoding of EOS */
 	};
 
 	int huffman_decoder_error;
@@ -125,24 +121,24 @@ int test_decode() {
 int test_encode() {
 	const size_t in_n = 8;
 	const str in[] = {
-		((str){0, (uint8_t*)""}),
-		((str){1, (uint8_t*)";"}),
-		((str){1, (uint8_t*)"3"}),
-		((str){2, (uint8_t*)"33"}),
-		((str){4, (uint8_t*)"1020"}),
-		((str){1, (uint8_t*)"\xA3"}),
-		((str){15, (uint8_t*)"www.example.com"}),
-		((str){22, (uint8_t*)"/.well-known/host-meta"}),
+		STR_C(0, ""),
+		STR_C(1, ";"),
+		STR_C(1, "3"),
+		STR_C(2, "33"),
+		STR_C(4, "1020"),
+		STR_C(1, "\xA3"),
+		STR_C(15, "www.example.com"),
+		STR_C(22, "/.well-known/host-meta"),
 	};
 	const str out[] = {
-		((str){0, (uint8_t*)""}),
-		((str){1, (uint8_t*)"\xEC"}),
-		((str){1, (uint8_t*)"G"}),
-		((str){2, (uint8_t*)"B?"}),
-		((str){2, (uint8_t*)"\x10\x20"}),
-		((str){4, (uint8_t*)"\xFF\xFF\xFF\xFF"}),
-		((str){12, (uint8_t*)"\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFF"}),
-		((str){17, (uint8_t*)"\x3B\xFC\xD7\x65\x99\xBD\xAE\x6F\x3B\x8F\x5B\x71\x76\x6B\x56\xE4\xFF"}),
+		STR_C(0, ""),
+		STR_C(1, "\xEC"),
+		STR_C(1, "G"),
+		STR_C(2, "B?"),
+		STR_C(2, "\x10\x20"),
+		STR_C(4, "\xFF\xFF\xFF\xFF"),
+		STR_C(12, "\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFF"),
+		STR_C(17, "\x3B\xFC\xD7\x65\x99\xBD\xAE\x6F\x3B\x8F\x5B\x71\x76\x6B\x56\xE4\xFF"),
 	};
 
 	int huffman_encoder_error;
