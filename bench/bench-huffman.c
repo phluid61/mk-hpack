@@ -6,14 +6,11 @@
 
 #include "benchmark.h"
 #include "../lib/hpack.h"
+#include "../str.h"
 
 #define LLU(i) ((long long unsigned int)(i))
 #define LF(f,d) ((long double)(f)/(long double)(d))
 
-typedef struct str {
-	size_t length;
-	uint8_t *ptr;
-} str;
 
 /* suites of benchmarks to run */
 #define SAMPLE_BY_PACKING 1
@@ -121,27 +118,27 @@ inline int uri_forbidden( uint8_t b) {return !!(__uri_forbidden [b>>6]&(1<<(b&0x
 #if SAMPLE_REAL_URIS
 # define HOST_COUNT 8
 const str  hosts[HOST_COUNT] = {
-	(str){15, (uint8_t*)"www.example.com"},
-	(str){14, (uint8_t*)"www.google.com"},
-	(str){23, (uint8_t*)"fbstatic-a.akamaihd.net"},
-	(str){15, (uint8_t*)"www.youtube.com"},
-	(str){22, (uint8_t*)"www.library.qut.edu.au"},
-	(str){18, (uint8_t*)"eprints.qut.edu.au"},
-	(str){29, (uint8_t*)"digitalcollections.qut.edu.au"},
-	(str){20, (uint8_t*)"matthew.kerwin.net.au"},
+	STR_C(15, "www.example.com"),
+	STR_C(14, "www.google.com"),
+	STR_C(23, "fbstatic-a.akamaihd.net"),
+	STR_C(15, "www.youtube.com"),
+	STR_C(22, "www.library.qut.edu.au"),
+	STR_C(18, "eprints.qut.edu.au"),
+	STR_C(29, "digitalcollections.qut.edu.au"),
+	STR_C(20, "matthew.kerwin.net.au"),
 };
 const str hhosts[HOST_COUNT];
 # define HOST_LENGTH (15+14+23+15+22+18+29+20)
 # define PATH_COUNT 8
 const str  paths[PATH_COUNT] = {
-	(str){1,  (uint8_t*)"/"},
-	(str){151,(uint8_t*)"/xjs/_/js/k=xjs.s.en_US.LsU8tgs6eAk.O/m=sx,c,sb,cr,elog,jsa,r,hsm,pcc,csi/am=Ivw_FUZHUEACYBU/rt=j/d=1/sv=2/t=zcms/rs=AItRSTO0aOFXDxhZTQ28kL94SXVBLVU2gg"},
-	(str){33, (uint8_t*)"/rsrc.php/v2/yw/r/Jegd7vMb5lV.png"},
-	(str){20, (uint8_t*)"/watch?v=dQw4w9WgXcQ"},
-	(str){29, (uint8_t*)"/images/new/corpsite-logo.png"},
-	(str){100,(uint8_t*)"/secure/cgi/users/home?screen=User%3A%3AStaff%3A%3AEdit&userid=11721&_action_null=Administer+Account"},
-	(str){48, (uint8_t*)"/style/images/home/promo-asia-pacific-images.jpg"},
-	(str){29, (uint8_t*)"/blog/20131209_painting_sheds"},
+	STR_C(1,  "/"),
+	STR_C(151,"/xjs/_/js/k=xjs.s.en_US.LsU8tgs6eAk.O/m=sx,c,sb,cr,elog,jsa,r,hsm,pcc,csi/am=Ivw_FUZHUEACYBU/rt=j/d=1/sv=2/t=zcms/rs=AItRSTO0aOFXDxhZTQ28kL94SXVBLVU2gg"),
+	STR_C(33, "/rsrc.php/v2/yw/r/Jegd7vMb5lV.png"),
+	STR_C(20, "/watch?v=dQw4w9WgXcQ"),
+	STR_C(29, "/images/new/corpsite-logo.png"),
+	STR_C(100,"/secure/cgi/users/home?screen=User%3A%3AStaff%3A%3AEdit&userid=11721&_action_null=Administer+Account"),
+	STR_C(48, "/style/images/home/promo-asia-pacific-images.jpg"),
+	STR_C(29, "/blog/20131209_painting_sheds"),
 };
 const str hpaths[PATH_COUNT];
 # define PATH_LENGTH (1+151+33+20+29+100+48+29)
@@ -152,8 +149,8 @@ const str hpaths[PATH_COUNT];
 # define N_PACKED 612
 uint8_t __total[N_BYTES+1] = {0};
 uint8_t __htotal[N_PACKED+1] = {0};
-const str total = (str){N_BYTES, __total};
-const str htotal = (str){N_PACKED, __htotal};
+const str total = STR_C(N_BYTES, __total);
+const str htotal = STR_C(N_PACKED, __htotal);
 void generate_total() {
 	int i, j; char x[256] = {0};
 	for (i = 0; i < 256; i++) {
