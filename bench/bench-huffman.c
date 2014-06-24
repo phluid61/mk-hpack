@@ -13,7 +13,7 @@
 
 
 /* suites of benchmarks to run */
-#define SAMPLE_BY_PACKING 1
+#define SAMPLE_BY_PACKING 0
 #define SAMPLE_HEX        0
 #define SAMPLE_REAL_URIS  1
 #define SAMPLE_BYTES      1
@@ -24,10 +24,6 @@
 
 
 #if SAMPLE_BY_PACKING
-# define COUNT_QUADS 3
-const uint8_t quad_soup[COUNT_QUADS] = {
-	48, 49, 50,
-};
 # define COUNT_OCTAS 12
 const uint8_t octa_soup[COUNT_OCTAS] = {
 	59, 66, 67, 69, 73, 79, 80, 85, 88, 106, 107, 122,
@@ -55,8 +51,6 @@ const uint8_t long_soup[COUNT_LONGS] = {
 	238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
 	254, 255,
 };
-const str   quads[COUNT];
-const str  hquads[COUNT];
 const str   octas[COUNT];
 const str  hoctas[COUNT];
 const str  shorts[COUNT];
@@ -223,7 +217,6 @@ int main() {
 
 	srand(time(NULL));
 #if SAMPLE_BY_PACKING
-	generate((uint8_t*)quad_soup, COUNT_QUADS, (str*)quads, (str*)hquads);
 	generate((uint8_t*)octa_soup, COUNT_OCTAS, (str*)octas, (str*)hoctas);
 	generate((uint8_t*)short_soup,COUNT_SHORTS,(str*)shorts,(str*)hshorts);
 	generate((uint8_t*)long_soup, COUNT_LONGS, (str*)longs, (str*)hlongs);
@@ -247,11 +240,6 @@ int main() {
 	printf("\n%d strings per category\n%d bytes per string\n\n", COUNT, LENGTH);
 #endif
 #if SAMPLE_BY_PACKING
-	printf(" bytes that encode to 4 bits\n");
-	x=bench_encode_strs( quads ,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
-	y=bench_decode_strs(hquads ,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
-	printf("          [%10.2Lfx]\n", LF(y,x));
-
 	printf(" bytes that encode to 8 bits\n");
 	x=bench_encode_strs( octas ,COUNT);printf("  Encode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(x), LF(x,COUNT*LENGTH));
 	y=bench_decode_strs(hoctas ,COUNT);printf("  Decode  : %10llu ns [%7.3Lf ns / byte]\n", LLU(y), LF(y,COUNT*LENGTH));
