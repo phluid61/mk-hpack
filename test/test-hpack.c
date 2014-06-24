@@ -3,11 +3,7 @@
 #include <stdlib.h>
 
 #include "../lib/hpack.h"
-
-typedef struct str {
-	size_t length;
-	uint8_t *ptr;
-} str;
+#include "../str.h"
 
 void dump(uint8_t* buff, size_t n, char token, char literal) {
 	size_t j;
@@ -28,23 +24,23 @@ void dump(uint8_t* buff, size_t n, char token, char literal) {
 #endif
 }
 
-int test_decode() {
+int test_decode_int() {
 	const size_t good_n = 12;
 	const str good_in[] = {
-		((str){1, (uint8_t*)"\x00"}),
-		((str){1, (uint8_t*)"\x01"}),
-		((str){1, (uint8_t*)"\xFE"}),
-		((str){2, (uint8_t*)"\xFF\x00"}),
-		((str){2, (uint8_t*)"\xFF\x01"}),
+		STR_C(1, "\x00"),
+		STR_C(1, "\x01"),
+		STR_C(1, "\xFE"),
+		STR_C(2, "\xFF\x00"),
+		STR_C(2, "\xFF\x01"),
 
-		((str){1, (uint8_t*)"\x01"}),
-		((str){1, (uint8_t*)"\x7E"}),
-		((str){2, (uint8_t*)"\x7F\x00"}),
-		((str){2, (uint8_t*)"\x7F\x7F"}),
-		((str){3, (uint8_t*)"\x7F\x80\x01"}),
-		((str){3, (uint8_t*)"\x7F\x81\x01"}),
+		STR_C(1, "\x01"),
+		STR_C(1, "\x7E"),
+		STR_C(2, "\x7F\x00"),
+		STR_C(2, "\x7F\x7F"),
+		STR_C(3, "\x7F\x80\x01"),
+		STR_C(3, "\x7F\x81\x01"),
 
-		((str){6, (uint8_t*)"\xFF\xF2\x81\xC0\x80\x01"}),
+		STR_C(6, "\xFF\xF2\x81\xC0\x80\x01"),
 	};
 	const size_t good_pb[] = {
 		8,8,8,8,8,
@@ -115,7 +111,7 @@ int test_decode() {
 	return retval;
 }
 
-int test_encode() {
+int test_encode_int() {
 	const size_t good_n = 12;
 	const HPACK_INT_T good_in[] = {
 		0x00,
@@ -144,20 +140,20 @@ int test_encode() {
 		0xF0,
 	};
 	const str good_out[] = {
-		((str){1, (uint8_t*)"\x00"}),
-		((str){1, (uint8_t*)"\x01"}),
-		((str){1, (uint8_t*)"\xFE"}),
-		((str){2, (uint8_t*)"\xFF\x00"}),
-		((str){2, (uint8_t*)"\xFF\x01"}),
+		STR_C(1, "\x00"),
+		STR_C(1, "\x01"),
+		STR_C(1, "\xFE"),
+		STR_C(2, "\xFF\x00"),
+		STR_C(2, "\xFF\x01"),
 
-		((str){1, (uint8_t*)"\x01"}),
-		((str){1, (uint8_t*)"\x7E"}),
-		((str){2, (uint8_t*)"\x7F\x00"}),
-		((str){2, (uint8_t*)"\x7F\x7F"}),
-		((str){3, (uint8_t*)"\x7F\x80\x01"}),
-		((str){3, (uint8_t*)"\x7F\x81\x01"}),
+		STR_C(1, "\x01"),
+		STR_C(1, "\x7E"),
+		STR_C(2, "\x7F\x00"),
+		STR_C(2, "\x7F\x7F"),
+		STR_C(3, "\x7F\x80\x01"),
+		STR_C(3, "\x7F\x81\x01"),
 
-		((str){6, (uint8_t*)"\xFF\xF2\x81\xC0\x80\x01"}),
+		STR_C(6, "\xFF\xF2\x81\xC0\x80\x01"),
 	};
 
 	const size_t bad_n = 4;
@@ -249,6 +245,6 @@ int test_encode() {
 }
 
 int main() {
-	return test_decode() + test_encode();
+	return test_decode_int() + test_encode_int();
 }
 
