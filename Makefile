@@ -6,6 +6,9 @@ LIBDIR=./lib
 TSTDIR=./test
 BENCHDIR=./bench
 
+TESTLIB=common
+TESTFLAGS=
+
 #BENCHLIB=benchmark-gettime
 #BENCHFLAGS=-Wl,--no-as-needed -Wl,-lrt
 BENCHLIB=benchmark-custom
@@ -21,9 +24,12 @@ NAMES = hpack
 TEST_NAMES  = huffman hpack
 BENCH_NAMES = huffman
 
+HUFF_CODES = $(SRCDIR)/huffman_codes.inc
+
 # Headers & Sources for building target libraries
 hpack_HEADER = $(SRCDIR)/hpack.h
 hpack_SOURCE = $(SRCDIR)/hpack.c
+hpack_DEPS   = $(HUFF_CODES)
 
 # Lists ...
 OBJECTS :=
@@ -53,7 +59,7 @@ ifeq (,$$(findstring /$(1).o,$$(OBJECTS)))
 	LIBS += $(LIBDIR)/$(1).so
 endif
 # Object
-$(OBJDIR)/$(1).o: $$($(1)_SOURCE) $$($(1)_HEADER)
+$(OBJDIR)/$(1).o: $$($(1)_SOURCE) $$($(1)_HEADER) $$($(1)_DEPS)
 	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
 # Shared object
 $(LIBDIR)/$(1).so: $(OBJDIR)/$(1).o
@@ -77,8 +83,19 @@ $(DISTFILE): lib
 	tar cvzf $(DISTFILE) --transform='s,$(LIBDIR)/,$(DIST)/,' $(HEADERS) $(LIBS)
 
 #
+# Huffman Codes
+#
+
+$(HUFF_CODES): huffman_codes.rb
+	ruby $< > $@
+
+#
 # Tests
 #
+
+TEST_OBJECTS += $(TSTDIR)/$(TESTLIB).o
+$(TSTDIR)/$(TESTLIB).o: $(TSTDIR)/$(TESTLIB).c
+	$(CC) $(OBJ_CFLAGS) $(CFLAGS) -c $< -o $@
 
 define TEST_RULES
 ifeq (,$$(findstring $(1),$$(TESTS)))
@@ -89,7 +106,7 @@ endif
 $(1).o: $(1).c $$(HEADERS)
 	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
 # Exe
-$(1): $(1).o $$(OBJECTS)
+$(1): $(1).o $$(OBJECTS) $(TSTDIR)/$(TESTLIB).o
 	$$(CC) $$^ -o $$@
 endef
 $(foreach tst,$(TEST_NAMES),$(eval $(call TEST_RULES,$(TSTDIR)/test-$(tst))))
