@@ -105,7 +105,7 @@ size_t huffman_length(
  * @param size_t * produced used to report number of bytes written
  * @return 
  */
-size_t huffman_decode(
+int huffman_decode(
 		uint8_t *huff, size_t bytesize, size_t *consumed,
 		uint8_t *buff, size_t n, size_t *produced
 );
