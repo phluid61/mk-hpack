@@ -5,26 +5,7 @@
 #include "../lib/hpack.h"
 #include "../str.h"
 
-void dump(uint8_t* buff, size_t n, char token, char literal) {
-	size_t j;
-	printf(" %c ", token);
-	for (j = 0; j < n; j++) {
-		printf(" %02x", buff[j]);
-	}
-	printf(".\n");
-
-#ifndef NO_LITERALS
-	if (literal) {
-		printf("    \"");
-		for (j = 0; j < n; j++) {
-			printf("%c", buff[j]);
-		}
-		printf("\"\n");
-	}
-#endif
-}
-
-#define dump_str(str,token,literal) dump((str).ptr,(str).length,(token),(literal))
+#include "common.h"
 
 int test_decode_int() {
 	const size_t good_n = 12;
@@ -77,38 +58,42 @@ int test_decode_int() {
 	size_t i;
 	HPACK_INT_T result; uint8_t pf;
 
-	printf("**\n** DECODER\n**\n\n");
+	printf("\n" BOLD "**\n** DECODE INT\n**\n" NORMAL "\n");
 
 	for (i = 0; i < good_n; i++) {
-		printf("Test %d:\n", (int)i);
-		dump_str(good_in[i], '<', 0);
+		printf(BOLD "Test %d: " NORMAL, (int)i);
 
 		/* aha! sending uninitialised buff to my function! */
 		hpack_decoder_error = hpack_decode_int(good_in[i].ptr, good_in[i].length, NULL, good_pb[i], &result, &pf);
 
 		if (hpack_decoder_error) {
-			printf(" * error: %d\n", hpack_decoder_error);
-		}
+			printf(RED "error: %d" NORMAL "\n", hpack_decoder_error);
+			retval ++;
+		} else {
 
-		if (result == good_out[i]) {
-			if (pf == good_pf[i]) {
-				match = 1;
+			if (result == good_out[i]) {
+				if (pf == good_pf[i]) {
+					match = 1;
+				} else {
+					match = 0;
+					printf(RED "prefix was %02x, expected %02x" NORMAL "\n", pf, good_pf[i]);
+				}
 			} else {
 				match = 0;
-				printf(" * prefix was %02x, expected %02x\n", pf, good_pf[i]);
+				printf(RED "returned %x bytes, expected %x" NORMAL "\n", (int)result, (int)good_out[i]);
 			}
-		} else {
-			match = 0;
-			printf(" * returned %x, expected %x\n", (int)result, (int)good_out[i]);
+
+			if (!match) {
+				dump_str(good_in[i], '<', 0);
+				printf(" > %02X | %d\n", pf, (int)result);
+				printf(" ~ %02X | %d\n", good_pf[i], (int)(good_out[i]));
+				printf("\n");
+			} else {
+				printf(GREEN "PASS" NORMAL "\n");
+			}
+
+			retval += (!match);
 		}
-
-		/*if (!match) {*/
-			printf(" > %02X | %d\n", pf, (int)result);
-			printf(" ~ %02X | %d\n", good_pf[i], (int)(good_out[i]));
-		/*}*/
-		printf("\n");
-
-		retval += (!(match)||!!hpack_decoder_error);
 	}
 	return retval;
 }
@@ -180,6 +165,13 @@ int test_encode_int() {
 		0x01, /* prefix sets masked bits */
 		0xC0, /* prefix sets masked bits */
 	};
+	const int bad_out[] = {
+		4, /* invalid prefix */
+		4, /* invalid prefix */
+
+		4, /* invalid prefix */
+		4, /* invalid prefix */
+	};
 
 	int hpack_encoder_error;
 
@@ -190,63 +182,179 @@ int test_encode_int() {
 	size_t i,j;
 	size_t length;
 
-	printf("**\n** ENCODER\n**\n\n");
+	printf("\n" BOLD "**\n** ENCODE INT\n**\n" NORMAL "\n");
 
 	for (i = 0; i < good_n; i++) {
-		printf("Test %d:\n", (int)i);
-		printf(" < %08x [%3d]; %d | %02x\n", (unsigned int)(good_in[i]), (int)(good_in[i]), (int)(good_pb[i]), good_pf[i]);
+		printf(BOLD "Test %d: " NORMAL, (int)i);
 
 		/* aha! sending uninitialised buff to my function! */
 		hpack_encoder_error = hpack_encode_int(good_in[i], good_pb[i], good_pf[i], buff, n, &length);
 
 		if (hpack_encoder_error) {
-			printf(" * error: %d\n", hpack_encoder_error);
-		}
-
-		if (length == good_out[i].length) {
-			match = 1;
-			for (j = 0; j < length; j++) {
-				if (buff[j] != good_out[i].ptr[j]) {
-					printf(" * mismatch at byte %d: got %02x, expected %02x\n", (int)j, buff[j], good_out[i].ptr[j]);
-					match = 0;
-					break;
-				}
-			}
+			printf(RED "error: %d" NORMAL "\n", hpack_encoder_error);
+			retval ++;
 		} else {
-			match = 0;
-			printf(" * returned %d, expected %d\n", (int)length, (int)good_out[i].length);
+
+			if (length == good_out[i].length) {
+				match = 1;
+				for (j = 0; j < length; j++) {
+					if (buff[j] != good_out[i].ptr[j]) {
+						printf(RED "mismatch at byte %d: got %02x, expected %02x" NORMAL "\n", (int)j, buff[j], good_out[i].ptr[j]);
+						match = 0;
+						break;
+					}
+				}
+			} else {
+				match = 0;
+				printf(RED "returned %d, expected %d" NORMAL "\n", (int)length, (int)good_out[i].length);
+			}
+
+			if (!match) {
+				printf(" < %08x [%3d]; %d | %02x\n", (unsigned int)(good_in[i]), (int)(good_in[i]), (int)(good_pb[i]), good_pf[i]);
+				dump(buff, length, '>', 0);
+				dump_str(good_out[i], '~', 0);
+				printf("\n");
+			} else {
+				printf(GREEN "PASS" NORMAL "\n");
+			}
+
+			retval += (!match);
 		}
-
-		/*if (!match) {*/
-			dump(buff, length, '>', 0);
-			dump_str(good_out[i], '~', 0);
-		/*}*/
-		printf("\n");
-
-		retval += (!(match)||!!hpack_encoder_error);
 	}
 
 	for (i = 0; i < bad_n; i++) {
-		printf("Test %d:\n", (int)(good_n+i));
-		printf(" < %08x [%3d]; %d | %02x\n", (unsigned int)(bad_in[i]), (int)(bad_in[i]), (int)(bad_pb[i]), bad_pf[i]);
+		printf(BOLD "Test %d: " NORMAL, (int)(good_n+i));
 
 		/* aha! sending uninitialised buff to my function! */
 		hpack_encoder_error = hpack_encode_int(bad_in[i], bad_pb[i], bad_pf[i], buff, n, &length);
 
-		if (hpack_encoder_error) {
-			printf(" * error: %d\n", hpack_encoder_error);
+		if (hpack_encoder_error != bad_out[i]) {
+			printf(RED "error: %d (expected %d)" NORMAL "\n", hpack_encoder_error, bad_out[i]);
+			printf(" < %08x [%3d]; %d | %02x\n", (unsigned int)(bad_in[i]), (int)(bad_in[i]), (int)(bad_pb[i]), bad_pf[i]);
+			/*dump(buff, length, '>', 1);*/
+			printf("\n");
+			retval ++;
+		} else {
+			printf(GREEN "PASS" NORMAL "\n");
 		}
-
-		/*dump(buff, length, '>', 1);*/
-		printf("\n");
-
-		retval += (!hpack_encoder_error);
 	}
 
 	return retval;
 }
 
+
+int test_hpack_encode_raw_str() {
+	const size_t in_n = 4;
+	const str in[] = {
+		STR_C(0, ""),
+		STR_C(1, "."),
+		STR_C(5, "\x00\x20\x00\xFF\x30"),
+		STR_C(512, \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+			 ),
+	};
+	const str out[] = {
+		STR_C(1, "\x00"),
+		STR_C(2, "\x01."),
+		STR_C(6, "\x05\x00\x20\x00\xFF\x30"),
+		STR_C(515, "\x7F\x81\x03" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+			 ),
+	};
+
+	int retval=0;
+	size_t i;
+
+	printf("\n" BOLD "**\n** ENCODE RAW STR\n**\n" NORMAL "\n");
+
+	for (i = 0; i < in_n; i++) {
+		printf(BOLD "Test %d: " NORMAL, (int)i);
+		retval += test(&(in[i]), &(out[i]), hpack_encode_raw_str);
+	}
+
+	if (retval == 0) {
+		printf(GREEN);
+	} else if (retval < in_n) {
+		printf(YELLOW);
+	} else {
+		printf(RED);
+	}
+	printf("Passed %d of %d tests." NORMAL "\n\n", (int)(in_n-retval), (int)in_n);
+
+	return retval;
+}
+
+int test_hpack_encode_huff_str() {
+	const size_t in_n = 4;
+	const str in[] = {
+		STR_C(0, ""),
+		STR_C(1, "\xF9"),
+		STR_C(5, "\x00\x20\x00\xFF\x30"),
+		STR_C(512, \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+			 ),
+	};
+	const str out[] = {
+		STR_C(1, "\x80"),
+		STR_C(2, "\x81\xF9"),
+		STR_C(6, "\x85\x00\x20\x00\xFF\x30"),
+		STR_C(515, "\xFF\x81\x03" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+				"................................................................" \
+			 ),
+	};
+
+	int retval=0;
+	size_t i;
+
+	printf("\n" BOLD "**\n** ENCODE HUFF STR\n**\n" NORMAL "\n");
+
+	for (i = 0; i < in_n; i++) {
+		printf(BOLD "Test %d: " NORMAL, (int)i);
+		retval += test(&(in[i]), &(out[i]), hpack_encode_huff_str);
+	}
+
+	if (retval == 0) {
+		printf(GREEN);
+	} else if (retval < in_n) {
+		printf(YELLOW);
+	} else {
+		printf(RED);
+	}
+	printf("Passed %d of %d tests." NORMAL "\n\n", (int)(in_n-retval), (int)in_n);
+
+	return retval;
+}
+
 int main() {
-	return test_decode_int() + test_encode_int();
+	return test_decode_int() + test_encode_int()
+		+ test_hpack_encode_raw_str() + test_hpack_encode_huff_str();
 }
 
