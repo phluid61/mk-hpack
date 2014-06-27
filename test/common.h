@@ -1,6 +1,8 @@
 
 #include <stdint.h>
+
 #ifndef HAVE_TEST_COMMON
+#define HAVE_TEST_COMMON 1
 
 #define BOLD "\x1B[1m"
 #define RED "\x1B[31m"
@@ -15,6 +17,4 @@ void dump(uint8_t* buff, size_t n, char token, char literal);
 int test(const str *in, const str *out, int (*f)(uint8_t*,size_t,size_t*,uint8_t*,size_t,size_t*));
 int test_err(const str *in, int err, int (*f)(uint8_t*,size_t,size_t*,uint8_t*,size_t,size_t*));
 
-#define HAVE_TEST_COMMON 1
 #endif
-

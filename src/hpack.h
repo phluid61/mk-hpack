@@ -2,7 +2,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/** The type of integer that can be en/decoded by hpack_en/decode_int() */
+#ifndef HAVE_HPACK
+#define HAVE_HPACK 1
+
+/** The type of integer that can be en/decoded by hpack_[en|de]code_int() */
 #define HPACK_INT_T uint64_t
 
 
@@ -177,3 +180,5 @@ int hpack_decode_str(
 	uint8_t *str, size_t bytesize, size_t *consumed,
 	uint8_t *buff, size_t n, size_t *produced
 );
+
+#endif
