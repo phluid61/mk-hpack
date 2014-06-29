@@ -356,3 +356,16 @@ size_t huffman_length(
 	}
 	return (result / 8);
 }
+
+
+
+#include "str.inc.c"
+#include "hpack_header.inc.c"
+#include "hpack_refset.inc.c"
+#include "hpack_header_table.inc.c"
+
+typedef struct hpack_recv_context {
+	hpack_refset *refset;
+	hpack_header_table *header_table;
+	hpack_header *block;
+} hpack_recv_context;

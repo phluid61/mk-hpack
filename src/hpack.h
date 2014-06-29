@@ -181,4 +181,15 @@ int hpack_decode_str(
 	uint8_t *buff, size_t n, size_t *produced
 );
 
+
+#define INDEXED_BIT          0x80
+#define LITERAL_INDEXED_BIT  0x40
+#define CONTEXT_UPDATE_BIT   0x20
+#define LITERAL_NOINDEX_BIT  0x10
+
+#define CONTEXT_UPDATE  0x20
+#define FLUSH_REFSET  (CONTEXT_UPDATE|0x10)
+#define RESIZE_TABLE  (CONTEXT_UPDATE|0x00)
+
+
 #endif
