@@ -7,20 +7,39 @@ typedef struct hpack_header_table {
 
 	size_t        size;
 	size_t        max;
-	hpack_refset *refset;
+
+	size_t        length;
 } hpack_header_table;
 
 inline
-hpack_header_table *hpack_header_table__new(size_t max, hpack_refset *refset) {
+hpack_header_table *hpack_header_table__new(size_t max) {
 	hpack_header_table *ptr = (hpack_header_table*)calloc(1, sizeof(hpack_header_table));
 	ptr->table = (hpack_header**)calloc(hpack_header_table__size, sizeof(hpack_header*));
 	ptr->table_head = 0;
 	ptr->table_tail = 0;
 	ptr->size = 0;
 	ptr->max = max;
-	ptr->refset = refset;
+	ptr->length = 0;
 	return ptr;
 }
+
+inline
+void hpack_header_table__destroy(hpack_header_table *this) {
+	hpack_header *e;
+	size_t i = this->table_tail;
+	while (i != this->table_head) {
+		e = this->table[i];
+		hpack_header__destroy(e); free(e);
+		if (i == 0) {
+			i = hpack_header_table__size - 1;
+		} else {
+			-- i;
+		}
+	}
+	free(this->table);
+}
+
+#define hpack_header_table__length(this) ((this)->length)
 
 inline
 size_t hpack_header_table__set_max(hpack_header_table *this, size_t max) {
@@ -54,10 +73,19 @@ size_t hpack_header_table__add_entry(hpack_header_table *this, hpack_header *ent
 		this->table[prev] = entry;
 		this->table_head = prev;
 		this->size += e_size;
+		this->length ++;
 		return 1;
 	} else {
 		return 0;
 	}
+}
+
+inline
+hpack_header *hpack_header_table__get(hpack_header_table *this, size_t i) {
+	if (i > this->length) {
+		return NULL;
+	}
+	return this->table[((table_head + i - 1) % hpack_header_table__size)];
 }
 
 
@@ -72,9 +100,7 @@ void hpack_header_table__evict(hpack_header_table *this, size_t max) {
 			this->table_tail --;
 		}
 		this->size -= hpack_header__size(e);
-		if (hpack_refset__drop(this->refset, e)) {
-			hpack_header__destroy(e);
-			free(e);
-		}
+		this->length --;
+		hpack_header__destroy(e); free(e);
 	}
 }
