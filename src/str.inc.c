@@ -15,7 +15,7 @@ str* str__dup_shallow(str *this) {
 
 void str__dup2_shallow(str *src, str *dst) {
 	if (dst->ptr) {
-		free(ptr->ptr);
+		free(dst->ptr);
 	}
 	dst->length = src->length;
 	dst->ptr = src->ptr;

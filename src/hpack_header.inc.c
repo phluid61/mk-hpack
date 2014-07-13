@@ -27,7 +27,7 @@ hpack_header *hpack_header__new_shallow(str *key, str *value) {
 
 inline
 hpack_header *hpack_header__dup(hpack_header *this) {
-	return hpack_header_new(&(this->key), &(this->value));
+	return hpack_header__new(&(this->key), &(this->value));
 }
 
 inline

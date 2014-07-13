@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include "hpack_errors.h"
 #include "hpack.h"
 
@@ -395,9 +396,9 @@ void hpack_recv_context__destroy(hpack_recv_context *this) {
 #define hpack_gets(e, b,n,c, x,m,p, y, z) \
 	e = hpack_decode_str(b,n,c,x,m,p); \
 	if (e) { goto failed; } \
-	(y) += c; \
-	b += c; n -= c; \
-	z = str__new2(x,p);
+	(y) += *(c); \
+	b += *(c); n -= *(c); \
+	z = str__new2(x,*(p));
 
 int
 hpack_recv_context__recv_indexed(
@@ -408,7 +409,7 @@ hpack_recv_context__recv_indexed(
 ) {
 	int err;
 	size_t cons;
-	HPACK_INT_T i;
+	HPACK_INT_T idx;
 
 	uint8_t buff[0x4000];
 	size_t prod;
@@ -438,8 +439,8 @@ hpack_recv_context__recv_indexed(
 			name
 		);
 	} else {
-		e = hpack_header_table__get(this, idx);
-		name = str_dup(&(e->key));
+		e = hpack_header_table__get(this->header_table, idx);
+		name = str__dup(&(e->key));
 	}
 
 	hpack_gets(
@@ -455,7 +456,7 @@ hpack_recv_context__recv_indexed(
 
 failed:
 	if (name) {
-		str_destroy(name); free(name);
+		str__destroy(name); free(name);
 	}
 	return err;
 }
@@ -524,7 +525,7 @@ hpack_header __STATIC_TABLE_TABLE[61] = {
 	(hpack_header){STR_C(16,"www-authenticate"), STR_C0}, /* 61 */
 };
 hpack_header_table __STATIC_TABLE = (hpack_header_table){
-	&__STATIC_TABLE_TABLE,
+	(hpack_header**)(&__STATIC_TABLE_TABLE),
 	(size_t)0, (size_t)61,
 	(size_t)2633, (size_t)2633,
 	(size_t)61
@@ -545,31 +546,30 @@ void hpack_recv_context__recv(hpack_recv_context *this, uint8_t *bytes, size_t n
 	hpack_header *e;
 	while (n) {
 		b = *bytes;
-		if (b & INDEXED_BIT == INDEXED_BIT) {
+		if ((b & INDEXED_BIT) == INDEXED_BIT) {
 			err = hpack_decode_int(bytes, n, &consumed, 7, &i, NULL);
-			/* if (err) {...} */
-			hpack_recv_context__recv_index(this, i);
-			if (i > hpack_header_table__length(this)) {
-				e = hpack_static_table__get(i - hpack_header_table__length(this));
+			if (err) {/*...*/}
+			if (i > hpack_header_table__length(this->header_table)) {
+				e = hpack_static_table__get(i - hpack_header_table__length(this->header_table));
 				/* if (!e) {...} */
-				hpack_header_table__add_entry(this->header_table, e)
+				hpack_header_table__add_entry(this->header_table, e);
 			} else {
 				e = hpack_header_table__get(this->header_table, i);
 			}
 			hpack_header_table__add_entry(this->block, hpack_header__dup(e));
 			bytes += consumed; n -= consumed;
-		} else if (b & LITERAL_INDEXED_BIT == LITERAL_INDEXED_BIT) {
+		} else if ((b & LITERAL_INDEXED_BIT) == LITERAL_INDEXED_BIT) {
 			err = hpack_recv_context__recv_indexed(this, bytes, n, &consumed, 6, &e);
-			/* if (err) {...} */
+			if (err) {/*...*/}
 			hpack_header_table__add_entry(this->header_table, e);
 			hpack_header_table__add_entry(this->block, hpack_header__dup(e));
 			bytes += consumed; n -= consumed;
-		} else if (b & CONTEXT_UPDATE_BIT == CONTEXT_UPDATE_BIT) {
+		} else if ((b & CONTEXT_UPDATE_BIT) == CONTEXT_UPDATE_BIT) {
 			/* ##### */
 		} else {
 			/* "don't index" and "never index" are all the same to me */
 			err = hpack_recv_context__recv_indexed(this, bytes, n, &consumed, 4, &e);
-			/* if (err) {...} */
+			if (err) {/*...*/}
 			hpack_header_table__add_entry(this->block, e);
 			bytes += consumed; n -= consumed;
 		}
