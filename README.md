@@ -94,7 +94,7 @@ if (huffman_decoder_error) {
 
 ## Contributor Code of Conduct
 
-This repository is subject to a [Contributor Code of Conduct][code_of_conduct.md]
+This repository is subject to a [Contributor Code of Conduct](code_of_conduct.md)
 based on the [Contributor Covenant](http://contributor-covenant.org) version 1.3.0.
 
 
