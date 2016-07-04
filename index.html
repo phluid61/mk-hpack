@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>mk-hpack</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="/bootstrap.min.css" rel="stylesheet">
+		<link href="/site.css" rel="stylesheet">
+	</head>
+	<body>
+		<nav class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="/">phluid61</a>
+			</div>
+			<div class="collapse navbar-collapse">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="https://github.com/phluid61/">Repositories</a>
+					</li>
+					<li class="dropdown">
+						<a href="/internet-drafts/" class="dropdown-toggle" data-toggle="dropdown">Internet Drafts<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="/internet-drafts/">Internet Drafts Index</a></li>
+							<li class="divider"></li>
+							<li><a href="/internet-drafts/file-scheme/">file URI Scheme</a></li>
+							<li><a href="/internet-drafts/http2-encoded-data/">HTTP/2 Encoded Data</a></li>
+							<li><a href="/internet-drafts/http2-nak-frame/">HTTP/2 "Dropped Frame" Frame</a></li>
+							<li><a href="/internet-drafts/http2-segments/"><s>HTTP/2 Segments</s></a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Web Stuff<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="/mk-hpack/">mk-hpack</a></li>
+							<li><a href="/http2-experimental/">HTTP/2 Experiments</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Ruby Gems<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="/mug/">Matty's Ultimate Gem</a></li>
+							<li><a href="/symbol_lookup-gem/">Symbol[]</a></li>
+							<li><a href="/timestamp-gem/">Time.timestamp</a></li>
+							<li><a href="/hashmap-gem/">hashmap</a></li>
+							<li><a href="/memory-profiler-gem/">MemoryProfiler</a></li>
+							<li><a href="/threadpuddle-gem/">ThreadPuddle</a></li>
+							<li><a href="/try_convert/">try_convert</a></li>
+							<li><a href="/to_h-gem/">to_h</a></li>
+							<li><a href="/tauday-gem/">tauday</a></li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li>
+						<a href="https://twitter.com/phluid61"><img src="/twitter.png" width="28" height="28"></a>
+					</li>
+					<li>
+						<a href="https://plus.google.com/+MatthewKerwin"><img src="/google+.png" width="28" height="28"></a>
+					</li>
+				</ul>
+			</div>
+			</nav>
+			<div class="container">
+<h1>HPACK - HTTP/2 Compression</h1>
+
+<h2>To build</h2>
+
+<pre><code>make dist
+</code></pre>
+
+<h2>To use</h2>
+
+<p>These examples use static linking:</p>
+
+<h3>HPACK integer encoding</h3>
+
+<pre lang="c"><code>#include &lt;stdint.h&gt;
+#include &quot;lib/hpack.h&quot;
+
+unsigned int i = 987; /* number to encode */
+size_t  nbits = 6;    /* number of bits to occupy in the first byte */
+uint8_t pbits = 0x40; /* initial value of the first byte */
+
+#define BUFFER_SIZE 4321
+uint8_t buffer[BUFFER_SIZE];
+size_t  written;      /* will hold the number of bytes written */
+
+written = hpack_encode_int(i, nbits, pbits, buffer, BUFFER_SIZE, NULL);
+if (hpack_encoder_error) {
+    fprintf(2, &quot;Error encoding integer[%u]: %d\n&quot;, i, hpack_encoder_error);
+} else {
+    printf(&quot;Encoded integer[%u] in %d bytes\n&quot;, i, written);
+}
+</code></pre>
+
+<pre lang="c"><code>#include &lt;stdint.h&gt;
+#include &quot;lib/hpack.h&quot;
+
+#define CODE_LENGTH 10
+uint8_t code[CODE_LENGH] = &quot;\xFF\xF2\x81\xC0\x80\x01XYZ&quot;;
+size_t  read;         /* will hold the number of bytes read */
+size_t  nbits = 6;    /* number of bits to occupy in the first byte */
+
+unsigned int i;       /* number to encode */
+uint8_t pbits;        /* will hold remainder of the first byte */
+
+i = hpack_decode_int(code, CODE_LENGTH, &amp;read, nbits, NULL, &amp;pbits);
+if (hpack_decoder_error) {
+    fprintf(2, &quot;Error decoding integer: %d\n&quot;, hpack_encoder_error);
+} else {
+    printf(&quot;Decoded integer[%u] from %d bytes, prefix was %02x\n&quot;, i, read, pbits);
+}
+</code></pre>
+
+<h3>Huffman string encoding</h3>
+
+<pre lang="c"><code>#include &lt;stdint.h&gt;
+#include &quot;lib/huffman.h&quot;
+
+#define STRING_LENGTH 16
+uint8_t string[STRING_LENGH] = &quot;www.example.com&quot;;
+
+#define BUFFER_SIZE 4321
+uint8_t buffer[BUFFER_SIZE];
+size_t  written;      /* will hold the number of bytes written */
+
+written = huffman_encode(string, STRING_LENGTH, NULL, buffer, BUFFER_SIZE, NULL);
+if (huffman_encoder_error) {
+    fprintf(2, &quot;Error encoding string: %d\n&quot;, huffman_encoder_error);
+} else {
+    printf(&quot;Encoded %d-byte string in %d bytes\n&quot;, STRING_LENGTH, written);
+}
+</code></pre>
+
+<pre lang="c"><code>#include &lt;stdint.h&gt;
+#include &quot;lib/huffman.h&quot;
+
+#define CODE_LENGTH 16
+uint8_t code[CODE_LENGH] = &quot;\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFFXYZ&quot;;
+size_t  read;         /* will hold the number of bytes read */
+
+#define BUFFER_SIZE 4321
+uint8_t buffer[BUFFER_SIZE];
+size_t  written;      /* will hold the number of bytes written */
+
+written = huffman_decode(code, CODE_LENGTH, &amp;read, buffer, BUFFER_SIZE, NULL);
+if (huffman_decoder_error) {
+    fprintf(2, &quot;Error decoding string: %d\n&quot;, huffman_decoder_error);
+} else {
+    printf(&quot;Decoded %d-byte string from %d bytes\n&quot;, written, read);
+}
+</code></pre>
+
+<h2>Contributor Code of Conduct</h2>
+
+<p>This repository is subject to a <a href="code_of_conduct.md">Contributor Code of Conduct</a><br>
+based on the <a href="http://contributor-covenant.org">Contributor Covenant</a> version 1.3.0.</p>
+
+<h2>License</h2>
+
+<p>Copyright (c) 2014, Matthew Kerwin <a href="mailto:matthew@kerwin.net.au">matthew@kerwin.net.au</a></p>
+
+<p>Permission to use, copy, modify, and/or distribute this software for any<br>
+purpose with or without fee is hereby granted, provided that the above<br>
+copyright notice and this permission notice appear in all copies.</p>
+
+<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES<br>
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF<br>
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR<br>
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES<br>
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN<br>
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF<br>
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p>
+<pre id="license" class="no-highlight">Copyright (c) 2014, Matthew Kerwin <matthew@kerwin.net.au>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+</pre><h1>Contributor Code of Conduct</h1>
+
+<p>As contributors and maintainers of this project, and in the interest of<br>
+fostering an open and welcoming community, we pledge to respect all people who<br>
+contribute through reporting issues, posting feature requests, updating<br>
+documentation, submitting pull requests or patches, and other activities.</p>
+
+<p>We are committed to making participation in this project a harassment-free<br>
+experience for everyone, regardless of level of experience, gender, gender<br>
+identity and expression, sexual orientation, disability, personal appearance,<br>
+body size, race, ethnicity, age, religion, or nationality.</p>
+
+<p>Examples of unacceptable behavior by participants include:</p>
+
+<ul>
+<li>The use of sexualized language or imagery</li>
+<li>Personal attacks</li>
+<li>Trolling or insulting/derogatory comments</li>
+<li>Public or private harassment</li>
+<li>Publishing other&#39;s private information, such as physical or electronic
+addresses, without explicit permission</li>
+<li>Other unethical or unprofessional conduct</li>
+</ul>
+
+<p>Project maintainers have the right and responsibility to remove, edit, or<br>
+reject comments, commits, code, wiki edits, issues, and other contributions<br>
+that are not aligned to this Code of Conduct, or to ban temporarily or<br>
+permanently any contributor for other behaviors that they deem inappropriate,<br>
+threatening, offensive, or harmful.</p>
+
+<p>By adopting this Code of Conduct, project maintainers commit themselves to<br>
+fairly and consistently applying these principles to every aspect of managing<br>
+this project. Project maintainers who do not follow or enforce the Code of<br>
+Conduct may be permanently removed from the project team.</p>
+
+<p>This Code of Conduct applies both within project spaces and in public spaces<br>
+when an individual is representing the project or its community.</p>
+
+<p>Instances of abusive, harassing, or otherwise unacceptable behavior may be<br>
+reported by contacting a project maintainer at <a href="mailto:matthew@kerwin.net.au">matthew@kerwin.net.au</a>. All<br>
+complaints will be reviewed and investigated and will result in a response that<br>
+is deemed necessary and appropriate to the circumstances. Maintainers are<br>
+obligated to maintain confidentiality with regard to the reporter of an<br>
+incident.</p>
+
+<p>This Code of Conduct is adapted from the <a href="http://contributor-covenant.org">Contributor Covenant</a>,<br>
+version 1.3.0, available at<br>
+<a href="http://contributor-covenant.org/version/1/3/0/">http://contributor-covenant.org/version/1/3/0/</a></p>
+			<script src="/jquery.min.js"></script>
+			<script src="/bootstrap.min.js"></script>
+	</body>
+</html>
