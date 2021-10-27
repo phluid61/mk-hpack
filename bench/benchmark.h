@@ -1,5 +1,5 @@
 #include <stdint.h>
 
-void init_bench();
-inline void bench_start();
-inline uint64_t bench_end();
+extern void init_bench();
+extern void bench_start();
+extern uint64_t bench_end();

@@ -9,9 +9,9 @@
 
 struct timespec __bench_start, __bench_end;
 
-inline void bench_start() { clock_gettime(BENCH_CLOCK, &__bench_start); }
+void bench_start() { clock_gettime(BENCH_CLOCK, &__bench_start); }
 
-inline uint64_t bench_end() {
+uint64_t bench_end() {
 	clock_gettime(BENCH_CLOCK, &__bench_end);
 	return nanoseconds(__bench_end) - nanoseconds(__bench_start);
 }

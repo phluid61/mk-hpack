@@ -5,7 +5,7 @@
 #include <sched.h>
 #include <string.h>
 
-#if !defined __cpu_set_t_defined
+#if !defined CPU_SET && !defined __cpu_set_t_defined
 /* hack because cygwin */
 # define __cpu_set_t_defined
 # define CPU_SET(cpu, cpusetp)	;
@@ -22,9 +22,9 @@ int sched_setaffinity(__pid_t _a, size_t _b, __const cpu_set_t *_c) {return 0;}
 double cycles_per_ns = 2.127; /* default = 2127 MHz */
 unsigned int __start_lo, __start_hi, __end_lo, __end_hi;
 
-inline void bench_start() { RDTSC(__start_lo,__start_hi); }
+void bench_start() { RDTSC(__start_lo,__start_hi); }
 
-inline uint64_t bench_end() {
+uint64_t bench_end() {
 	RDTSC(__end_lo, __end_hi);
 	return (cycles(__end_lo,__end_hi) - cycles(__start_lo,__start_hi)) / cycles_per_ns;
 }
