@@ -64,6 +64,11 @@
 			<div class="container">
 <h1>HPACK - HTTP/2 Compression</h1>
 
+<p>This is a basic implementation of HPACK: Header Compression for HTTP/2 as specified<br>
+in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
+
+<p><a href="code_of_conduct.md"><img src="https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg" alt="Contributor Covenant"></a></p>
+
 <h2>To build</h2>
 
 <pre><code>make dist
@@ -155,12 +160,12 @@ if (huffman_decoder_error) {
 <h2>Contributor Code of Conduct</h2>
 
 <p>This repository is subject to a <a href="code_of_conduct.md">Contributor Code of Conduct</a><br>
-adapted from the <a href="http://contributor-covenant.org">Contributor Covenant</a>, version 1.4, available at<br>
-<a href="http://contributor-covenant.org/version/1/4">http://contributor-covenant.org/version/1/4</a></p>
+adapted from the <a href="http://contributor-covenant.org">Contributor Covenant</a>, version 2.1, available at<br>
+<a href="http://contributor-covenant.org/version/2/1">http://contributor-covenant.org/version/2/1</a></p>
 
 <h2>License</h2>
 
-<p>Copyright (c) 2014, Matthew Kerwin <a href="mailto:matthew@kerwin.net.au">matthew@kerwin.net.au</a></p>
+<p>Copyright (c) 2014, 2021, Matthew Kerwin <a href="mailto:matthew@kerwin.net.au">matthew@kerwin.net.au</a></p>
 
 <p>Permission to use, copy, modify, and/or distribute this software for any<br>
 purpose with or without fee is hereby granted, provided that the above<br>
@@ -173,7 +178,7 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES<br>
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN<br>
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF<br>
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p>
-<pre id="license" class="no-highlight">Copyright (c) 2014, Matthew Kerwin <matthew@kerwin.net.au>
+<pre id="license" class="no-highlight">Copyright (c) 2014, 2021, Matthew Kerwin <matthew@kerwin.net.au>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -190,80 +195,132 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 <h2>Our Pledge</h2>
 
-<p>In the interest of fostering an open and welcoming environment, we as<br>
-contributors and maintainers pledge to making participation in our<br>
-project and our community a harassment-free experience for everyone,<br>
-regardless of age, body size, disability, ethnicity, gender identity<br>
-and expression, level of experience, nationality, personal appearance,<br>
-race, religion, or sexual identity and orientation.</p>
+<p>We as members, contributors, and leaders pledge to make participation in our<br>
+community a harassment-free experience for everyone, regardless of age, body<br>
+size, visible or invisible disability, ethnicity, sex characteristics, gender<br>
+identity and expression, level of experience, education, socio-economic status,<br>
+nationality, personal appearance, race, caste, color, religion, or sexual<br>
+identity and orientation.</p>
+
+<p>We pledge to act and interact in ways that contribute to an open, welcoming,<br>
+diverse, inclusive, and healthy community.</p>
 
 <h2>Our Standards</h2>
 
-<p>Examples of behavior that contributes to creating a positive<br>
-environment include:</p>
+<p>Examples of behavior that contributes to a positive environment for our<br>
+community include:</p>
 
 <ul>
-<li>Using welcoming and inclusive language</li>
-<li>Being respectful of differing viewpoints and experiences</li>
-<li>Gracefully accepting constructive criticism</li>
-<li>Focusing on what is best for the community</li>
-<li>Showing empathy towards other community members</li>
+<li>Demonstrating empathy and kindness toward other people</li>
+<li>Being respectful of differing opinions, viewpoints, and experiences</li>
+<li>Giving and gracefully accepting constructive feedback</li>
+<li>Accepting responsibility and apologizing to those affected by our mistakes,
+and learning from the experience</li>
+<li>Focusing on what is best not just for us as individuals, but for the overall
+community</li>
 </ul>
 
-<p>Examples of unacceptable behavior by participants include:</p>
+<p>Examples of unacceptable behavior include:</p>
 
 <ul>
-<li>The use of sexualized language or imagery and unwelcome sexual
-attention or advances</li>
-<li>Trolling, insulting/derogatory comments, and personal or political
-attacks</li>
+<li>The use of sexualized language or imagery, and sexual attention or advances of
+any kind</li>
+<li>Trolling, insulting or derogatory comments, and personal or political attacks</li>
 <li>Public or private harassment</li>
-<li>Publishing others&#39; private information, such as a physical or
-electronic address, without explicit permission</li>
+<li>Publishing others&#39; private information, such as a physical or email address,
+without their explicit permission</li>
 <li>Other conduct which could reasonably be considered inappropriate in a
 professional setting</li>
 </ul>
 
-<h2>Our Responsibilities</h2>
+<h2>Enforcement Responsibilities</h2>
 
-<p>Project maintainers are responsible for clarifying the standards of<br>
-acceptable behavior and are expected to take appropriate and fair<br>
-corrective action in response to any instances of unacceptable behavior.</p>
+<p>Community leaders are responsible for clarifying and enforcing our standards of<br>
+acceptable behavior and will take appropriate and fair corrective action in<br>
+response to any behavior that they deem inappropriate, threatening, offensive,<br>
+or harmful.</p>
 
-<p>Project maintainers have the right and responsibility to remove, edit,<br>
-or reject comments, commits, code, wiki edits, issues, and other<br>
-contributions that are not aligned to this Code of Conduct, or to ban<br>
-temporarily or permanently any contributor for other behaviors that they<br>
-deem inappropriate, threatening, offensive, or harmful.</p>
+<p>Community leaders have the right and responsibility to remove, edit, or reject<br>
+comments, commits, code, wiki edits, issues, and other contributions that are<br>
+not aligned to this Code of Conduct, and will communicate reasons for moderation<br>
+decisions when appropriate.</p>
 
 <h2>Scope</h2>
 
-<p>This Code of Conduct applies both within project spaces and in public<br>
-spaces when an individual is representing the project or its community.<br>
-Examples of representing a project or community include using an<br>
-official project e-mail address, posting via an official social media<br>
-account, or acting as an appointed representative at an online or<br>
-offline event.  Representation of a project may be further defined and<br>
-clarified by project maintainers.</p>
+<p>This Code of Conduct applies within all community spaces, and also applies when<br>
+an individual is officially representing the community in public spaces.<br>
+Examples of representing our community include using an official e-mail address,<br>
+posting via an official social media account, or acting as an appointed<br>
+representative at an online or offline event.</p>
 
 <h2>Enforcement</h2>
 
-<p>Instances of abusive, harassing, or otherwise unacceptable behavior may<br>
-be reported by contacting the project team at <a href="mailto:matthew@kerwin.net.au">matthew@kerwin.net.au</a>.<br>
-All complaints will be reviewed and investigated and will result in a<br>
-response that is deemed necessary and appropriate to the circumstances.<br>
-The project team is obligated to maintain confidentiality with regard to<br>
-the reporter of an incident. Further details of specific enforcement<br>
-policies may be posted separately.</p>
+<p>Instances of abusive, harassing, or otherwise unacceptable behavior may be<br>
+reported to the community leaders responsible for enforcement at<br>
+<a href="mailto:matthew@kerwin.net.au">matthew@kerwin.net.au</a>.<br>
+All complaints will be reviewed and investigated promptly and fairly.</p>
 
-<p>Project maintainers who do not follow or enforce the Code of Conduct in<br>
-good faith may face temporary or permanent repercussions as determined<br>
-by other members of the project&#39;s leadership.</p>
+<p>All community leaders are obligated to respect the privacy and security of the<br>
+reporter of any incident.</p>
+
+<h2>Enforcement Guidelines</h2>
+
+<p>Community leaders will follow these Community Impact Guidelines in determining<br>
+the consequences for any action they deem in violation of this Code of Conduct:</p>
+
+<h3>1. Correction</h3>
+
+<p><strong>Community Impact</strong>: Use of inappropriate language or other behavior deemed<br>
+unprofessional or unwelcome in the community.</p>
+
+<p><strong>Consequence</strong>: A private, written warning from community leaders, providing<br>
+clarity around the nature of the violation and an explanation of why the<br>
+behavior was inappropriate. A public apology may be requested.</p>
+
+<h3>2. Warning</h3>
+
+<p><strong>Community Impact</strong>: A violation through a single incident or series of<br>
+actions.</p>
+
+<p><strong>Consequence</strong>: A warning with consequences for continued behavior. No<br>
+interaction with the people involved, including unsolicited interaction with<br>
+those enforcing the Code of Conduct, for a specified period of time. This<br>
+includes avoiding interactions in community spaces as well as external channels<br>
+like social media. Violating these terms may lead to a temporary or permanent<br>
+ban.</p>
+
+<h3>3. Temporary Ban</h3>
+
+<p><strong>Community Impact</strong>: A serious violation of community standards, including<br>
+sustained inappropriate behavior.</p>
+
+<p><strong>Consequence</strong>: A temporary ban from any sort of interaction or public<br>
+communication with the community for a specified period of time. No public or<br>
+private interaction with the people involved, including unsolicited interaction<br>
+with those enforcing the Code of Conduct, is allowed during this period.<br>
+Violating these terms may lead to a permanent ban.</p>
+
+<h3>4. Permanent Ban</h3>
+
+<p><strong>Community Impact</strong>: Demonstrating a pattern of violation of community<br>
+standards, including sustained inappropriate behavior, harassment of an<br>
+individual, or aggression toward or disparagement of classes of individuals.</p>
+
+<p><strong>Consequence</strong>: A permanent ban from any sort of public interaction within the<br>
+community.</p>
 
 <h2>Attribution</h2>
 
-<p>This Code of Conduct is adapted from the <a href="http://contributor-covenant.org">Contributor Covenant</a>,<br>
-version 1.4, available at <a href="http://contributor-covenant.org/version/1/4">http://contributor-covenant.org/version/1/4</a></p>
+<p>This Code of Conduct is adapted from the <a href="https://www.contributor-covenant.org">Contributor Covenant</a>,<br>
+version 2.1, available at<br>
+<a href="https://www.contributor-covenant.org/version/2/1/code_of_conduct.html">https://www.contributor-covenant.org/version/2/1/code_of_conduct.html</a>.</p>
+
+<p>Community Impact Guidelines were inspired by<br>
+<a href="https://github.com/mozilla/diversity">Mozilla&#39;s code of conduct enforcement ladder</a>.</p>
+
+<p>For answers to common questions about this code of conduct, see the FAQ at<br>
+<a href="https://www.contributor-covenant.org/faq">https://www.contributor-covenant.org/faq</a>. Translations are available at<br>
+<a href="https://www.contributor-covenant.org/translations">https://www.contributor-covenant.org/translations</a>.</p>
 			<script src="/jquery.min.js"></script>
 			<script src="/bootstrap.min.js"></script>
 	</body>
