@@ -132,7 +132,7 @@ int hpack_decode_int(
 	return ERROR_NONE;
 }
 
-inline int __hpack_encode_str(
+static inline int __hpack_encode_str(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t prefix,
 		uint8_t *buff, size_t n, size_t *produced
