@@ -1,6 +1,11 @@
 HPACK - HTTP/2 Compression
 ==========================
 
+This is a basic implementation of HPACK: Header Compression for HTTP/2 as specified
+in [RFC 7541](https://www.rfc-editor.org/rfc/rfc7541.html)
+
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
+
 ## To build
 
     make dist
@@ -95,8 +100,8 @@ if (huffman_decoder_error) {
 ## Contributor Code of Conduct
 
 This repository is subject to a [Contributor Code of Conduct](code_of_conduct.md)
-adapted from the [Contributor Covenant][cc], version 1.4, available at
-<http://contributor-covenant.org/version/1/4>
+adapted from the [Contributor Covenant][cc], version 2.1, available at
+<http://contributor-covenant.org/version/2/1>
 
 
 [cc]: http://contributor-covenant.org
@@ -104,7 +109,7 @@ adapted from the [Contributor Covenant][cc], version 1.4, available at
 
 ## License
 
-Copyright (c) 2014, Matthew Kerwin <matthew@kerwin.net.au>
+Copyright (c) 2014, 2021, Matthew Kerwin <matthew@kerwin.net.au>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
