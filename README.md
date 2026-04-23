@@ -114,7 +114,7 @@ adapted from the [Contributor Covenant][cc], version 2.1, available at
 
 ## License
 
-Copyright (c) 2014, 2021, Matthew Kerwin <matthew@kerwin.net.au>
+Copyright (c) 2014, 2021, 2026, Matthew Kerwin <matthew@kerwin.net.au>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
