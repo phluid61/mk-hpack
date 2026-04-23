@@ -16,15 +16,29 @@ The build is GNU Make. Compiler flags and tool paths are in `Makefile.inc`;
 everything else is in `Makefile`.
 
 ```
-make            # build lib/ (shared object + header)
-make dist       # build a versioned tarball
+make            # build lib/ (shared object, static library, header)
+make dist       # build a binary distribution tarball
+make sdist      # build a source distribution tarball
+make install    # install to PREFIX (default /usr/local)
 make check      # build and run tests
 make bench      # build and run benchmarks
 make clean      # remove build artefacts
 ```
 
 There is no CI pipeline for builds or tests. The only GitHub Actions workflow
-(`.github/workflows/update-pages.yml`) syncs documentation to `gh-pages`.
+(`.github/workflows/update-pages.yml`) syncs documentation to `gh-pages`
+when `main` is updated.
+
+## Branching
+
+This repository uses a git-flow branching model:
+
+- `development` — default branch; feature branches merge here
+- `main` — release branch; receives merges from `development`
+- `feature/*` — short-lived branches off `development`
+
+The GitHub Pages workflow triggers on pushes to `main`, so documentation
+updates go live on release.
 
 ## Code generation
 
