@@ -220,6 +220,9 @@ int hpack_decode_str(
 		return ERROR_NONE;
 	} else {
 		/* string is unencoded, copy it as-is */
+		if (length > bytesize - cons) {
+			return ERROR_TRUNCATED;
+		}
 		if (length > n) {
 			return ERROR_OVERFLOW;
 		}
