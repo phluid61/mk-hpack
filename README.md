@@ -4,7 +4,7 @@ HPACK - HTTP/2 Compression
 This is a basic implementation of HPACK: Header Compression for HTTP/2 as specified
 in [RFC 7541](https://www.rfc-editor.org/rfc/rfc7541.html)
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg)](code_of_conduct.md)
 
 ## To build
 
