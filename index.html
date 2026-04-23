@@ -72,76 +72,81 @@ in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 <h2><a href="#to-use" aria-hidden="true" class="anchor" id="to-use"></a>To use</h2>
 <p>These examples use static linking:</p>
 <h3><a href="#hpack-integer-encoding" aria-hidden="true" class="anchor" id="hpack-integer-encoding"></a>HPACK integer encoding</h3>
-<pre lang="c"><code>#include &lt;stdint.h&gt;
+<pre lang="c"><code>#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
 #include &quot;lib/hpack.h&quot;
 
-unsigned int i = 987; /* number to encode */
-size_t  nbits = 6;    /* number of bits to occupy in the first byte */
+HPACK_INT_T i = 987; /* number to encode */
+size_t  nbits = 6;   /* number of bits to occupy in the first byte */
 uint8_t pbits = 0x40; /* initial value of the first byte */
 
 #define BUFFER_SIZE 4321
 uint8_t buffer[BUFFER_SIZE];
 size_t  written;      /* will hold the number of bytes written */
 
-written = hpack_encode_int(i, nbits, pbits, buffer, BUFFER_SIZE, NULL);
-if (hpack_encoder_error) {
-    fprintf(2, &quot;Error encoding integer[%u]: %d\n&quot;, i, hpack_encoder_error);
+int error = hpack_encode_int(i, nbits, pbits, buffer, BUFFER_SIZE, &amp;written);
+if (error) {
+    fprintf(stderr, &quot;Error encoding integer: %d\n&quot;, error);
 } else {
-    printf(&quot;Encoded integer[%u] in %d bytes\n&quot;, i, written);
+    printf(&quot;Encoded integer in %zu bytes\n&quot;, written);
 }
 </code></pre>
-<pre lang="c"><code>#include &lt;stdint.h&gt;
+<pre lang="c"><code>#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
 #include &quot;lib/hpack.h&quot;
 
 #define CODE_LENGTH 10
-uint8_t code[CODE_LENGH] = &quot;\xFF\xF2\x81\xC0\x80\x01XYZ&quot;;
-size_t  read;         /* will hold the number of bytes read */
+uint8_t code[CODE_LENGTH] = &quot;\xFF\xF2\x81\xC0\x80\x01XYZ&quot;;
+size_t  consumed;     /* will hold the number of bytes read */
 size_t  nbits = 6;    /* number of bits to occupy in the first byte */
 
-unsigned int i;       /* number to encode */
+HPACK_INT_T i;        /* decoded integer */
 uint8_t pbits;        /* will hold remainder of the first byte */
 
-i = hpack_decode_int(code, CODE_LENGTH, &amp;read, nbits, NULL, &amp;pbits);
-if (hpack_decoder_error) {
-    fprintf(2, &quot;Error decoding integer: %d\n&quot;, hpack_encoder_error);
+int error = hpack_decode_int(code, CODE_LENGTH, &amp;consumed, nbits, &amp;i, &amp;pbits);
+if (error) {
+    fprintf(stderr, &quot;Error decoding integer: %d\n&quot;, error);
 } else {
-    printf(&quot;Decoded integer[%u] from %d bytes, prefix was %02x\n&quot;, i, read, pbits);
+    printf(&quot;Decoded integer[%lu] from %zu bytes, prefix was %02x\n&quot;,
+        (unsigned long)i, consumed, pbits);
 }
 </code></pre>
 <h3><a href="#huffman-string-encoding" aria-hidden="true" class="anchor" id="huffman-string-encoding"></a>Huffman string encoding</h3>
-<pre lang="c"><code>#include &lt;stdint.h&gt;
-#include &quot;lib/huffman.h&quot;
+<pre lang="c"><code>#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
+#include &quot;lib/hpack.h&quot;
 
 #define STRING_LENGTH 16
-uint8_t string[STRING_LENGH] = &quot;www.example.com&quot;;
+uint8_t string[STRING_LENGTH] = &quot;www.example.com&quot;;
 
 #define BUFFER_SIZE 4321
 uint8_t buffer[BUFFER_SIZE];
 size_t  written;      /* will hold the number of bytes written */
 
-written = huffman_encode(string, STRING_LENGTH, NULL, buffer, BUFFER_SIZE, NULL);
-if (huffman_encoder_error) {
-    fprintf(2, &quot;Error encoding string: %d\n&quot;, huffman_encoder_error);
+int error = huffman_encode(string, STRING_LENGTH, NULL, buffer, BUFFER_SIZE, &amp;written);
+if (error) {
+    fprintf(stderr, &quot;Error encoding string: %d\n&quot;, error);
 } else {
-    printf(&quot;Encoded %d-byte string in %d bytes\n&quot;, STRING_LENGTH, written);
+    printf(&quot;Encoded %d-byte string in %zu bytes\n&quot;, STRING_LENGTH, written);
 }
 </code></pre>
-<pre lang="c"><code>#include &lt;stdint.h&gt;
-#include &quot;lib/huffman.h&quot;
+<pre lang="c"><code>#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
+#include &quot;lib/hpack.h&quot;
 
 #define CODE_LENGTH 16
-uint8_t code[CODE_LENGH] = &quot;\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFFXYZ&quot;;
-size_t  read;         /* will hold the number of bytes read */
+uint8_t code[CODE_LENGTH] = &quot;\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFFXYZ&quot;;
+size_t  consumed;     /* will hold the number of bytes read */
 
 #define BUFFER_SIZE 4321
 uint8_t buffer[BUFFER_SIZE];
 size_t  written;      /* will hold the number of bytes written */
 
-written = huffman_decode(code, CODE_LENGTH, &amp;read, buffer, BUFFER_SIZE, NULL);
-if (huffman_decoder_error) {
-    fprintf(2, &quot;Error decoding string: %d\n&quot;, huffman_decoder_error);
+int error = huffman_decode(code, CODE_LENGTH, &amp;consumed, buffer, BUFFER_SIZE, &amp;written);
+if (error) {
+    fprintf(stderr, &quot;Error decoding string: %d\n&quot;, error);
 } else {
-    printf(&quot;Decoded %d-byte string from %d bytes\n&quot;, written, read);
+    printf(&quot;Decoded %zu-byte string from %zu bytes\n&quot;, written, consumed);
 }
 </code></pre>
 <h2><a href="#contributor-code-of-conduct" aria-hidden="true" class="anchor" id="contributor-code-of-conduct"></a>Contributor Code of Conduct</h2>
