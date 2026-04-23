@@ -1,0 +1,27 @@
+Source: mkhpack
+Section: libs
+Priority: optional
+Maintainer: Matthew Kerwin <matthew@kerwin.net.au>
+Build-Depends: debhelper-compat (= 13), ruby
+Standards-Version: 4.6.2
+Homepage: https://github.com/phluid61/mk-hpack
+Rules-Requires-Root: no
+
+Package: libmkhpack1
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: HPACK header compression for HTTP/2
+ A C implementation of HPACK: Header Compression for HTTP/2 as
+ specified in RFC 7541. Provides integer encoding/decoding,
+ Huffman string encoding/decoding, and HPACK string primitives.
+
+Package: libmkhpack-dev
+Section: libdevel
+Architecture: any
+Depends: libmkhpack1 (= ${binary:Version}), ${misc:Depends}
+Description: HPACK header compression for HTTP/2 - development files
+ A C implementation of HPACK: Header Compression for HTTP/2 as
+ specified in RFC 7541.
+ .
+ This package contains the header files, static library, and
+ pkg-config file needed for development.
