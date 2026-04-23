@@ -215,7 +215,3 @@ check: $(TESTS)
 
 bench: $(BENCHES)
 	@$(foreach b,$(BENCHES),echo "$(b)"; ./$(b) 2> /dev/null) echo "Done"
-
-.PHONY: always
-always:
-	true
