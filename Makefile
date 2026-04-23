@@ -209,14 +209,12 @@ uninstall:
 	-rm $(DESTDIR)$(PREFIX)/lib/pkgconfig/mkhpack.pc
 
 
-.PHONY: tests check benchmarks bench
+.PHONY: check bench
 
-tests: $(TESTS)
-check: tests
+check: $(TESTS)
 	@$(foreach t,$(TESTS),echo "$(t)"; ./$(t) > /dev/null; echo "$$? test failures";) echo "Done"
 
-benchmarks: $(BENCHES)
-bench: benchmarks
+bench: $(BENCHES)
 	@$(foreach b,$(BENCHES),echo "$(b)"; ./$(b) 2> /dev/null) echo "Done"
 
 .PHONY: always
