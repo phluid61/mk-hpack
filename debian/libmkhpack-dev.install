@@ -1,3 +1,4 @@
+usr/lib/libmkhpack.so
 usr/lib/libmkhpack.a
 usr/include/hpack.h
 usr/lib/pkgconfig/mkhpack.pc

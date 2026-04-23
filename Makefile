@@ -16,6 +16,7 @@ BENCHFLAGS=-Wl,--no-as-needed
 
 # Version
 VERSION=1.0.0
+SOMAJOR=$(word 1,$(subst ., ,$(VERSION)))
 DIST=mkhpack-$(VERSION)
 
 # Install paths
@@ -36,10 +37,12 @@ hpack_SOURCE  = $(SRCDIR)/hpack.c
 hpack_DEPS    = $(HUFF_CODES)
 
 # Lists ...
-OBJECTS     :=
-HEADERS     :=
-LIBS        :=
-STATIC_LIBS :=
+OBJECTS      :=
+HEADERS      :=
+LIBS         :=
+LIB_SOLINKS  :=
+LIB_DEVLINKS :=
+STATIC_LIBS  :=
 
 TEST_OBJECTS  :=
 BENCH_OBJECTS :=
@@ -59,17 +62,25 @@ all: lib
 
 define LIBRARY_RULES
 ifeq (,$$(findstring /$(1).o,$$(OBJECTS)))
-	OBJECTS     += $(OBJDIR)/$(1).o
-	HEADERS     += $(LIBDIR)/$(1).h
-	LIBS        += $(LIBDIR)/lib$$($(1)_LIBNAME).so
-	STATIC_LIBS += $(LIBDIR)/lib$$($(1)_LIBNAME).a
+	OBJECTS      += $(OBJDIR)/$(1).o
+	HEADERS      += $(LIBDIR)/$(1).h
+	LIBS         += $(LIBDIR)/lib$$($(1)_LIBNAME).so.$(VERSION)
+	LIB_SOLINKS  += $(LIBDIR)/lib$$($(1)_LIBNAME).so.$(SOMAJOR)
+	LIB_DEVLINKS += $(LIBDIR)/lib$$($(1)_LIBNAME).so
+	STATIC_LIBS  += $(LIBDIR)/lib$$($(1)_LIBNAME).a
 endif
 # Object
 $(OBJDIR)/$(1).o: $$($(1)_SOURCE) $$($(1)_HEADER) $$($(1)_DEPS)
 	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
-# Shared object
-$(LIBDIR)/lib$$($(1)_LIBNAME).so: $(OBJDIR)/$(1).o
-	$$(CC) -shared $$< -o $$@
+# Shared object (versioned, with SONAME)
+$(LIBDIR)/lib$$($(1)_LIBNAME).so.$(VERSION): $(OBJDIR)/$(1).o
+	$$(CC) -shared -Wl,-soname,lib$$($(1)_LIBNAME).so.$(SOMAJOR) $$< -o $$@
+# SONAME symlink
+$(LIBDIR)/lib$$($(1)_LIBNAME).so.$(SOMAJOR): $(LIBDIR)/lib$$($(1)_LIBNAME).so.$(VERSION)
+	ln -sf $$(notdir $$<) $$@
+# Development symlink
+$(LIBDIR)/lib$$($(1)_LIBNAME).so: $(LIBDIR)/lib$$($(1)_LIBNAME).so.$(SOMAJOR)
+	ln -sf $$(notdir $$<) $$@
 # Static library
 $(LIBDIR)/lib$$($(1)_LIBNAME).a: $(OBJDIR)/$(1).o
 	$$(AR) rcs $$@ $$<
@@ -99,9 +110,9 @@ $(SDISTFILE):
 
 $(BDISTFILE): lib
 	tar czf $(BDISTFILE) \
-		--transform='s,^$(LIBDIR)/,,' \
-		--transform='s,^,$(DIST)/,' \
-		$(LIBS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) LICENSE README.md
+		--transform='s,^$(LIBDIR)/,,SH' \
+		--transform='s,^,$(DIST)/,SH' \
+		$(LIBS) $(LIB_SOLINKS) $(LIB_DEVLINKS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) LICENSE README.md
 
 #
 # Huffman Codes
@@ -169,14 +180,14 @@ $(foreach bnch,$(BENCH_NAMES),$(eval $(call BENCH_RULES,$(BENCHDIR)/bench-$(bnch
 
 .PHONY: lib sdist bdist dist clean distclean install uninstall
 
-lib: $(HEADERS) $(LIBS) $(STATIC_LIBS) $(PCFILE)
+lib: $(HEADERS) $(LIBS) $(LIB_SOLINKS) $(LIB_DEVLINKS) $(STATIC_LIBS) $(PCFILE)
 
 sdist: $(SDISTFILE)
 bdist: $(BDISTFILE)
 dist: bdist
 
 clean:
-	-rm $(OBJECTS) $(LIBS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
+	-rm $(OBJECTS) $(LIBS) $(LIB_SOLINKS) $(LIB_DEVLINKS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
 
 distclean:
 	-rm -f $(SDISTFILE) $(BDISTFILE)
@@ -186,12 +197,13 @@ install: lib
 	install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
 	install -d $(DESTDIR)$(PREFIX)/include
 	install -m 755 $(LIBS) $(DESTDIR)$(PREFIX)/lib/
+	cp -d $(LIB_SOLINKS) $(LIB_DEVLINKS) $(DESTDIR)$(PREFIX)/lib/
 	install -m 644 $(STATIC_LIBS) $(DESTDIR)$(PREFIX)/lib/
 	install -m 644 $(HEADERS) $(DESTDIR)$(PREFIX)/include/
 	install -m 644 $(PCFILE) $(DESTDIR)$(PREFIX)/lib/pkgconfig/
 
 uninstall:
-	-rm $(addprefix $(DESTDIR)$(PREFIX)/lib/,$(notdir $(LIBS) $(STATIC_LIBS)))
+	-rm $(addprefix $(DESTDIR)$(PREFIX)/lib/,$(notdir $(LIBS) $(LIB_SOLINKS) $(LIB_DEVLINKS) $(STATIC_LIBS)))
 	-rm $(addprefix $(DESTDIR)$(PREFIX)/include/,$(notdir $(HEADERS)))
 	-rm $(DESTDIR)$(PREFIX)/lib/pkgconfig/mkhpack.pc
 
