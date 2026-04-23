@@ -15,7 +15,7 @@ BENCHLIB=benchmark-custom
 BENCHFLAGS=-Wl,--no-as-needed
 
 # Version
-VERSION=1.0.0
+VERSION=1.0.1
 SOMAJOR=$(word 1,$(subst ., ,$(VERSION)))
 DIST=mkhpack-$(VERSION)
 
