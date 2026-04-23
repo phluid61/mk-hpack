@@ -147,6 +147,9 @@ static inline int __hpack_encode_str(
 	}
 
 	memcpy(buff + prod, str, bytesize);
+	if (consumed) {
+		*consumed = bytesize;
+	}
 	if (produced) {
 		*produced = prod + bytesize;
 	}
