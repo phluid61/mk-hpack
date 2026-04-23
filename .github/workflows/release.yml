@@ -49,7 +49,7 @@ jobs:
 
       - name: Build tarballs
         if: env.skip != 'true'
-        run: make sdist bdist
+        run: make dist bdist
 
       - name: Build Debian packages
         if: env.skip != 'true'

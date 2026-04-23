@@ -17,8 +17,8 @@ everything else is in `Makefile`.
 
 ```
 make            # build lib/ (shared object, static library, header)
-make dist       # build a binary distribution tarball
-make sdist      # build a source distribution tarball
+make dist       # build a source distribution tarball
+make bdist      # build a binary distribution tarball
 make install    # install to PREFIX (default /usr/local)
 make check      # build and run tests
 make bench      # build and run benchmarks

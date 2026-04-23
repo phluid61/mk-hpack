@@ -178,13 +178,12 @@ $(foreach bnch,$(BENCH_NAMES),$(eval $(call BENCH_RULES,$(BENCHDIR)/bench-$(bnch
 # Typical targets
 #
 
-.PHONY: lib sdist bdist dist clean distclean install uninstall
+.PHONY: lib dist bdist clean distclean install uninstall
 
 lib: $(HEADERS) $(LIBS) $(LIB_SOLINKS) $(LIB_DEVLINKS) $(STATIC_LIBS) $(PCFILE)
 
-sdist: $(SDISTFILE)
+dist: $(SDISTFILE)
 bdist: $(BDISTFILE)
-dist: bdist
 
 clean:
 	-rm -f $(OBJECTS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
