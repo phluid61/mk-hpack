@@ -1,0 +1,91 @@
+name: Release (main)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - 'code_of_conduct.md'
+      - 'LICENSE'
+      - 'AGENTS.md'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "release"
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y debhelper
+
+      - name: Extract version
+        id: version
+        run: |
+          version=$(grep '^VERSION=' Makefile | head -1 | cut -d= -f2)
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Check tag does not already exist
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if git rev-parse "${TAG}" >/dev/null 2>&1; then
+            echo "::notice::Tag ${TAG} already exists, skipping release."
+            echo "skip=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build and test
+        if: env.skip != 'true'
+        run: make check
+
+      - name: Build tarballs
+        if: env.skip != 'true'
+        run: make sdist bdist
+
+      - name: Build Debian packages
+        if: env.skip != 'true'
+        run: dpkg-buildpackage -us -uc -b
+
+      - name: Collect Debian packages
+        if: env.skip != 'true'
+        run: |
+          mkdir -p dist
+          mv ../*.deb dist/
+
+      - name: Create tag
+        if: env.skip != 'true'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${TAG}" -m "Release ${TAG}"
+          git push origin "${TAG}"
+
+      - name: Create GitHub Release
+        if: env.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "${TAG}" \
+            --title "mkhpack ${VERSION}" \
+            --generate-notes \
+            "mkhpack-${VERSION}-src.tar.gz" \
+            "mkhpack-${VERSION}.tar.gz" \
+            dist/*.deb
