@@ -119,10 +119,10 @@ const str  hosts[HOST_COUNT] = {
 	STR_C(22, "www.library.qut.edu.au"),
 	STR_C(18, "eprints.qut.edu.au"),
 	STR_C(29, "digitalcollections.qut.edu.au"),
-	STR_C(20, "matthew.kerwin.net.au"),
+	STR_C(21, "matthew.kerwin.net.au"),
 };
 const str hhosts[HOST_COUNT];
-# define HOST_LENGTH (15+14+23+15+22+18+29+20)
+# define HOST_LENGTH (15+14+23+15+22+18+29+21)
 # define PATH_COUNT 8
 const str  paths[PATH_COUNT] = {
 	STR_C(1,  "/"),
