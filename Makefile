@@ -187,7 +187,8 @@ bdist: $(BDISTFILE)
 dist: bdist
 
 clean:
-	-rm $(OBJECTS) $(LIBS) $(LIB_SOLINKS) $(LIB_DEVLINKS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
+	-rm -f $(OBJECTS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
+	-rm -f $(LIBDIR)/*.so $(LIBDIR)/*.so.*
 
 distclean:
 	-rm -f $(SDISTFILE) $(BDISTFILE)
