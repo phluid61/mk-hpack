@@ -38,7 +38,11 @@ This repository uses a git-flow branching model:
 - `feature/*` — short-lived branches off `development`
 
 The GitHub Pages workflow triggers on pushes to `main`, so documentation
-updates go live on release.
+updates go live on release. The release workflow also triggers on pushes
+to `main` (excluding documentation-only changes), and creates a tagged
+GitHub Release with tarballs and `.deb` packages.
+
+See `.github/workflows/` for workflow definitions.
 
 ## Code generation
 
