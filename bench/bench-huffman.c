@@ -121,7 +121,7 @@ const str  hosts[HOST_COUNT] = {
 	STR_C(29, "digitalcollections.qut.edu.au"),
 	STR_C(21, "matthew.kerwin.net.au"),
 };
-const str hhosts[HOST_COUNT];
+str hhosts[HOST_COUNT];
 # define HOST_LENGTH (15+14+23+15+22+18+29+21)
 # define PATH_COUNT 8
 const str  paths[PATH_COUNT] = {
@@ -134,7 +134,7 @@ const str  paths[PATH_COUNT] = {
 	STR_C(48, "/style/images/home/promo-asia-pacific-images.jpg"),
 	STR_C(29, "/blog/20131209_painting_sheds"),
 };
-const str hpaths[PATH_COUNT];
+str hpaths[PATH_COUNT];
 # define PATH_LENGTH (1+151+33+20+29+100+48+29)
 #endif
 
@@ -161,7 +161,7 @@ void generate_total() {
 #define WORST_PACKED(l) ((l)*26)
 
 #define n (size_t)(WORST_PACKED(LENGTH)*2)
-const uint8_t buff[n];
+uint8_t buff[n];
 
 
 
