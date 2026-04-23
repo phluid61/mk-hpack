@@ -223,7 +223,7 @@ int hpack_decode_str(
 		if (length > n) {
 			return ERROR_OVERFLOW;
 		}
-		memcpy(str + cons, buff, length);
+		memcpy(buff, str + cons, length);
 		(*consumed) += length;
 		*produced = length;
 		return ERROR_NONE;
