@@ -15,7 +15,7 @@ BENCHLIB=benchmark-custom
 BENCHFLAGS=-Wl,--no-as-needed
 
 # Version
-VERSION=1.0.1
+VERSION=2.0.0
 SOMAJOR=$(word 1,$(subst ., ,$(VERSION)))
 DIST=mkhpack-$(VERSION)
 
@@ -23,18 +23,18 @@ DIST=mkhpack-$(VERSION)
 PREFIX?=/usr/local
 
 # Names of target libraries
-NAMES = hpack
+NAMES = mkhpack
 
-TEST_NAMES  = huffman hpack
+TEST_NAMES  = huffman mkhpack
 BENCH_NAMES = huffman
 
 HUFF_CODES = $(SRCDIR)/huffman_codes.inc
 
 # Headers & Sources for building target libraries
-hpack_LIBNAME = mkhpack
-hpack_HEADER  = $(SRCDIR)/hpack.h
-hpack_SOURCE  = $(SRCDIR)/hpack.c
-hpack_DEPS    = $(HUFF_CODES)
+mkhpack_LIBNAME = mkhpack
+mkhpack_HEADER  = $(SRCDIR)/mkhpack.h
+mkhpack_SOURCE  = $(SRCDIR)/mkhpack.c
+mkhpack_DEPS    = $(HUFF_CODES)
 
 # Lists ...
 OBJECTS      :=
@@ -101,7 +101,7 @@ $(LIBDIR)/%.h: $(SRCDIR)/%.h
 SDISTFILE=$(DIST)-src.tar.gz
 BDISTFILE=$(DIST).tar.gz
 
-SDIST_FILES = src/hpack.c src/hpack.h src/hpack_errors.h \
+SDIST_FILES = src/mkhpack.c src/mkhpack.h src/mkhpack_errors.h \
               huffman_codes.rb str.h mkhpack.pc.in \
               Makefile Makefile.inc LICENSE README.md
 

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../lib/hpack.h"
+#include "../lib/mkhpack.h"
 #include "../str.h"
 
 #include "common.h"
@@ -35,7 +35,7 @@ int test_decode_int() {
 		0,0,0,0,0,0,
 		0xF0,
 	};
-	const HPACK_INT_T good_out[] = {
+	const MKHPACK_INT_T good_out[] = {
 		0x00,
 		0x01,
 		0xFE,
@@ -52,11 +52,11 @@ int test_decode_int() {
 		0x10100101,
 	};
 
-	int hpack_decoder_error;
+	int mkhpack_decoder_error;
 
 	char match; int retval=0;
 	size_t i;
-	HPACK_INT_T result; uint8_t pf;
+	MKHPACK_INT_T result; uint8_t pf;
 
 	printf("\n" BOLD "**\n** DECODE INT\n**\n" NORMAL "\n");
 
@@ -64,10 +64,10 @@ int test_decode_int() {
 		printf(BOLD "Test %d: " NORMAL, (int)i);
 
 		/* aha! sending uninitialised buff to my function! */
-		hpack_decoder_error = hpack_decode_int(good_in[i].ptr, good_in[i].length, NULL, good_pb[i], &result, &pf);
+		mkhpack_decoder_error = mkhpack_decode_int(good_in[i].ptr, good_in[i].length, NULL, good_pb[i], &result, &pf);
 
-		if (hpack_decoder_error) {
-			printf(RED "error: %d" NORMAL "\n", hpack_decoder_error);
+		if (mkhpack_decoder_error) {
+			printf(RED "error: %d" NORMAL "\n", mkhpack_decoder_error);
 			retval ++;
 		} else {
 
@@ -100,7 +100,7 @@ int test_decode_int() {
 
 int test_encode_int() {
 	const size_t good_n = 12;
-	const HPACK_INT_T good_in[] = {
+	const MKHPACK_INT_T good_in[] = {
 		0x00,
 		0x01,
 		0xFE,
@@ -144,7 +144,7 @@ int test_encode_int() {
 	};
 
 	const size_t bad_n = 4;
-	const HPACK_INT_T bad_in[] = {
+	const MKHPACK_INT_T bad_in[] = {
 		0,
 		0,
 
@@ -173,7 +173,7 @@ int test_encode_int() {
 		4, /* invalid prefix */
 	};
 
-	int hpack_encoder_error;
+	int mkhpack_encoder_error;
 
 	const size_t n = 32;
 	uint8_t buff[33]; /*n+1*/
@@ -188,10 +188,10 @@ int test_encode_int() {
 		printf(BOLD "Test %d: " NORMAL, (int)i);
 
 		/* aha! sending uninitialised buff to my function! */
-		hpack_encoder_error = hpack_encode_int(good_in[i], good_pb[i], good_pf[i], buff, n, &length);
+		mkhpack_encoder_error = mkhpack_encode_int(good_in[i], good_pb[i], good_pf[i], buff, n, &length);
 
-		if (hpack_encoder_error) {
-			printf(RED "error: %d" NORMAL "\n", hpack_encoder_error);
+		if (mkhpack_encoder_error) {
+			printf(RED "error: %d" NORMAL "\n", mkhpack_encoder_error);
 			retval ++;
 		} else {
 
@@ -226,10 +226,10 @@ int test_encode_int() {
 		printf(BOLD "Test %d: " NORMAL, (int)(good_n+i));
 
 		/* aha! sending uninitialised buff to my function! */
-		hpack_encoder_error = hpack_encode_int(bad_in[i], bad_pb[i], bad_pf[i], buff, n, &length);
+		mkhpack_encoder_error = mkhpack_encode_int(bad_in[i], bad_pb[i], bad_pf[i], buff, n, &length);
 
-		if (hpack_encoder_error != bad_out[i]) {
-			printf(RED "error: %d (expected %d)" NORMAL "\n", hpack_encoder_error, bad_out[i]);
+		if (mkhpack_encoder_error != bad_out[i]) {
+			printf(RED "error: %d (expected %d)" NORMAL "\n", mkhpack_encoder_error, bad_out[i]);
 			printf(" < %08x [%3d]; %d | %02x\n", (unsigned int)(bad_in[i]), (int)(bad_in[i]), (int)(bad_pb[i]), bad_pf[i]);
 			/*dump(buff, length, '>', 1);*/
 			printf("\n");
@@ -243,7 +243,7 @@ int test_encode_int() {
 }
 
 
-int test_hpack_encode_raw_str() {
+int test_mkhpack_encode_raw_str() {
 	const size_t in_n = 4;
 	const str in[] = {
 		STR_C(0, ""),
@@ -283,7 +283,7 @@ int test_hpack_encode_raw_str() {
 
 	for (i = 0; i < in_n; i++) {
 		printf(BOLD "Test %d: " NORMAL, (int)i);
-		retval += test(&(in[i]), &(out[i]), hpack_encode_raw_str);
+		retval += test(&(in[i]), &(out[i]), mkhpack_encode_raw_str);
 	}
 
 	if (retval == 0) {
@@ -298,7 +298,7 @@ int test_hpack_encode_raw_str() {
 	return retval;
 }
 
-int test_hpack_encode_huff_str() {
+int test_mkhpack_encode_huff_str() {
 	const size_t in_n = 4;
 	const str in[] = {
 		STR_C(0, ""),
@@ -338,7 +338,7 @@ int test_hpack_encode_huff_str() {
 
 	for (i = 0; i < in_n; i++) {
 		printf(BOLD "Test %d: " NORMAL, (int)i);
-		retval += test(&(in[i]), &(out[i]), hpack_encode_huff_str);
+		retval += test(&(in[i]), &(out[i]), mkhpack_encode_huff_str);
 	}
 
 	if (retval == 0) {
@@ -355,6 +355,6 @@ int test_hpack_encode_huff_str() {
 
 int main() {
 	return test_decode_int() + test_encode_int()
-		+ test_hpack_encode_raw_str() + test_hpack_encode_huff_str();
+		+ test_mkhpack_encode_raw_str() + test_mkhpack_encode_huff_str();
 }
 

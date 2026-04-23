@@ -41,7 +41,7 @@ make check
 %{_libdir}/libmkhpack.so
 
 %files devel
-%{_includedir}/hpack.h
+%{_includedir}/mkhpack.h
 %{_libdir}/libmkhpack.a
 %{_libdir}/pkgconfig/mkhpack.pc
 

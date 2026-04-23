@@ -5,9 +5,9 @@ This is a C library implementing HPACK (Header Compression for HTTP/2,
 
 ## Orientation
 
-- Public API: `src/hpack.h` — all exported function signatures and doc comments
-- Error codes: `src/hpack_errors.h`
-- Implementation: `src/hpack.c` — single-file; includes generated Huffman tables
+- Public API: `src/mkhpack.h` — all exported function signatures and doc comments
+- Error codes: `src/mkhpack_errors.h`
+- Implementation: `src/mkhpack.c` — single-file; includes generated Huffman tables
 - Helper type: `str.h` (root) — lightweight byte-string struct used in tests
 
 ## Build

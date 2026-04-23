@@ -1,4 +1,4 @@
 *.o
 *.exe
 test-huffman
-test-hpack
+test-mkhpack

@@ -2,11 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include "hpack_errors.h"
-#include "hpack.h"
+#include "mkhpack_errors.h"
+#include "mkhpack.h"
 
-#define HPACK_INT_T uint64_t
-#define MAX_HPACK_INT UINT64_C(-1)
+#define MKHPACK_INT_T uint64_t
+#define MAX_MKHPACK_INT UINT64_C(-1)
 
 #define HUFFMAN_FLAG   0x80
 #define HUFFMAN_PREFIX 7
@@ -27,8 +27,8 @@ typedef struct hnode_t {
 #define VALUE_OF(x) ((x)&0x7FFF)
 
 
-int hpack_encode_int(
-		HPACK_INT_T i, size_t prefix_bits, uint8_t prefix,
+int mkhpack_encode_int(
+		MKHPACK_INT_T i, size_t prefix_bits, uint8_t prefix,
 		uint8_t *buff, size_t n, size_t *produced
 ) {
 	uint8_t prefix_mask;
@@ -79,16 +79,16 @@ int hpack_encode_int(
 	return ERROR_NONE;
 }
 
-int hpack_decode_int(
+int mkhpack_decode_int(
 		uint8_t *buff, size_t bytesize, size_t *consumed,
 		size_t prefix_bits,
-		HPACK_INT_T *i, uint8_t *prefix
+		MKHPACK_INT_T *i, uint8_t *prefix
 ) {
 	uint8_t prefix_mask, b;
 	uint64_t shift;
-	HPACK_INT_T add;
+	MKHPACK_INT_T add;
 
-	HPACK_INT_T _i; size_t _c;
+	MKHPACK_INT_T _i; size_t _c;
 	if (!i) { i = &_i; }
 	if (!consumed) { consumed = &_c; }
 	*consumed = 0;
@@ -117,7 +117,7 @@ int hpack_decode_int(
 			}
 			b = *buff; buff++; (*consumed)++; bytesize--;
 			add = ((b & 0x7F) * shift);
-			if ((MAX_HPACK_INT - (*i)) < add) {
+			if ((MAX_MKHPACK_INT - (*i)) < add) {
 				return ERROR_OVERFLOW;
 			}
 			*i += add;
@@ -131,7 +131,7 @@ int hpack_decode_int(
 	return ERROR_NONE;
 }
 
-static inline int hpack_encode_str_(
+static inline int mkhpack_encode_str_(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t prefix,
 		uint8_t *buff, size_t n, size_t *produced
@@ -139,7 +139,7 @@ static inline int hpack_encode_str_(
 	int error;
 	size_t prod;
 
-	error = hpack_encode_int(bytesize, HUFFMAN_PREFIX, prefix, buff, n, &prod);
+	error = mkhpack_encode_int(bytesize, HUFFMAN_PREFIX, prefix, buff, n, &prod);
 	if (error) { return error; }
 
 	if (n < prod + bytesize) {
@@ -157,21 +157,21 @@ static inline int hpack_encode_str_(
 	return ERROR_NONE;
 }
 
-int hpack_encode_raw_str(
+int mkhpack_encode_raw_str(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t *buff, size_t n, size_t *produced
 ) {
-	return hpack_encode_str_(str, bytesize, consumed, 0x00, buff, n, produced);
+	return mkhpack_encode_str_(str, bytesize, consumed, 0x00, buff, n, produced);
 }
 
-int hpack_encode_huff_str(
+int mkhpack_encode_huff_str(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t *buff, size_t n, size_t *produced
 ) {
-	return hpack_encode_str_(str, bytesize, consumed, HUFFMAN_FLAG, buff, n, produced);
+	return mkhpack_encode_str_(str, bytesize, consumed, HUFFMAN_FLAG, buff, n, produced);
 }
 
-int hpack_encode_str(
+int mkhpack_encode_str(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t *buff, size_t n, size_t *produced
 ) {
@@ -181,7 +181,7 @@ int hpack_encode_str(
 	length = huffman_length(str, bytesize);
 	if (length < bytesize) {
 		/* huffman coding results in a shorter string */
-		error = hpack_encode_int(length, HUFFMAN_PREFIX, HUFFMAN_FLAG, buff, n, &prod);
+		error = mkhpack_encode_int(length, HUFFMAN_PREFIX, HUFFMAN_FLAG, buff, n, &prod);
 		if (error) { return error; }
 
 		if (n < prod + length) {
@@ -195,23 +195,23 @@ int hpack_encode_str(
 		return ERROR_NONE;
 	} else {
 		/* no gain from huffman coding */
-		return hpack_encode_str_(str, bytesize, consumed, 0x00, buff, n, produced);
+		return mkhpack_encode_str_(str, bytesize, consumed, 0x00, buff, n, produced);
 	}
 }
 
-int hpack_decode_str(
+int mkhpack_decode_str(
 	uint8_t *str, size_t bytesize, size_t *consumed,
 	uint8_t *buff, size_t n, size_t *produced
 ) {
 	size_t cons, cons2;
-	HPACK_INT_T length;
+	MKHPACK_INT_T length;
 	uint8_t prefix;
 	int error;
 
 	size_t _c;
 	if (!consumed) { consumed = &_c; }
 
-	error = hpack_decode_int(str, bytesize, &cons, HUFFMAN_PREFIX, &length, &prefix);
+	error = mkhpack_decode_int(str, bytesize, &cons, HUFFMAN_PREFIX, &length, &prefix);
 	*consumed = cons;
 	if (error) { return error; }
 

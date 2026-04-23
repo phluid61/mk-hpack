@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../lib/hpack.h"
+#include "../lib/mkhpack.h"
 #include "../str.h"
 
 #include "common.h"

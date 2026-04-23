@@ -5,7 +5,7 @@
 #include <time.h>
 
 #include "benchmark.h"
-#include "../lib/hpack.h"
+#include "../lib/mkhpack.h"
 #include "../str.h"
 
 #define LLU(i) ((long long unsigned int)(i))
