@@ -25,9 +25,15 @@ make bench      # build and run benchmarks
 make clean      # remove build artefacts
 ```
 
-There is no CI pipeline for builds or tests. The only GitHub Actions workflow
-(`.github/workflows/update-pages.yml`) syncs documentation to `gh-pages`
-when `main` is updated.
+There are two GitHub Actions workflows (see `.github/workflows/`):
+
+- `update-pages.yml` — syncs documentation to `gh-pages` when `main` is updated
+- `release.yml` — builds, tests (`make check`), and creates a tagged GitHub
+  Release with tarballs and `.deb` packages when non-documentation changes are
+  pushed to `main`
+
+There is no CI pipeline that runs on every push or pull request; tests only run
+as part of the release workflow.
 
 ## Branching
 
@@ -38,11 +44,7 @@ This repository uses a git-flow branching model:
 - `feature/*` — short-lived branches off `development`
 
 The GitHub Pages workflow triggers on pushes to `main`, so documentation
-updates go live on release. The release workflow also triggers on pushes
-to `main` (excluding documentation-only changes), and creates a tagged
-GitHub Release with tarballs and `.deb` packages.
-
-See `.github/workflows/` for workflow definitions.
+updates go live on release.
 
 ## Code generation
 
@@ -54,7 +56,7 @@ rebuilds the `.inc` file automatically when the script changes.
 
 - Test sources: `test/test-*.c`, with shared helpers in `test/common.{c,h}`
 - Benchmark sources: `bench/bench-*.c`, with harness in `bench/benchmark*.{c,h}`
-- Tests return a count of failures to stdout; `make check` runs them all
+- Tests return a failure count as their exit code; `make check` runs them all
 
 ## Layout
 
@@ -64,6 +66,7 @@ lib/            Build output (copied headers + shared objects)
 obj/            Intermediate object files
 test/           Test executables and sources
 bench/          Benchmark executables and sources
+debian/         Debian packaging files
 ```
 
 ## Licence
