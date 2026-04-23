@@ -1,0 +1,55 @@
+name: Update GitHub Pages (main)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [README.md, LICENSE, code_of_conduct.md]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  sync-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+
+      - name: Sync files from main
+        id: sync
+        run: |
+          git fetch origin main
+          git checkout origin/main -- README.md LICENSE code_of_conduct.md
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes detected"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Ruby
+        if: steps.sync.outputs.changed == 'true'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Build site
+        if: steps.sync.outputs.changed == 'true'
+        run: bundle exec rake compile
+
+      - name: Commit changes
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md LICENSE code_of_conduct.md index.html
+          git commit -m "Sync content files from main and rebuild"
+          git push
