@@ -181,7 +181,7 @@ int hpack_encode_str(
 		error = hpack_encode_int(length, HUFFMAN_PREFIX, HUFFMAN_FLAG, buff, n, &prod);
 		if (error) { return error; }
 
-		if (n < prod + bytesize) {
+		if (n < prod + length) {
 			return ERROR_OVERFLOW;
 		}
 
