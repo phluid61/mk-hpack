@@ -19,7 +19,7 @@ These examples use static linking:
 ```c
 #include <stdio.h>
 #include <stdint.h>
-#include "lib/hpack.h"
+#include "lib/mkhpack.h"
 
 HPACK_INT_T i = 987; /* number to encode */
 size_t  nbits = 6;   /* number of bits to occupy in the first byte */
@@ -29,7 +29,7 @@ uint8_t pbits = 0x40; /* initial value of the first byte */
 uint8_t buffer[BUFFER_SIZE];
 size_t  written;      /* will hold the number of bytes written */
 
-int error = hpack_encode_int(i, nbits, pbits, buffer, BUFFER_SIZE, &written);
+int error = mkhpack_encode_int(i, nbits, pbits, buffer, BUFFER_SIZE, &written);
 if (error) {
     fprintf(stderr, "Error encoding integer: %d\n", error);
 } else {
@@ -40,7 +40,7 @@ if (error) {
 ```c
 #include <stdio.h>
 #include <stdint.h>
-#include "lib/hpack.h"
+#include "lib/mkhpack.h"
 
 #define CODE_LENGTH 10
 uint8_t code[CODE_LENGTH] = "\xFF\xF2\x81\xC0\x80\x01XYZ";
@@ -50,7 +50,7 @@ size_t  nbits = 6;    /* number of bits to occupy in the first byte */
 HPACK_INT_T i;        /* decoded integer */
 uint8_t pbits;        /* will hold remainder of the first byte */
 
-int error = hpack_decode_int(code, CODE_LENGTH, &consumed, nbits, &i, &pbits);
+int error = mkhpack_decode_int(code, CODE_LENGTH, &consumed, nbits, &i, &pbits);
 if (error) {
     fprintf(stderr, "Error decoding integer: %d\n", error);
 } else {
@@ -64,7 +64,7 @@ if (error) {
 ```c
 #include <stdio.h>
 #include <stdint.h>
-#include "lib/hpack.h"
+#include "lib/mkhpack.h"
 
 #define STRING_LENGTH 16
 uint8_t string[STRING_LENGTH] = "www.example.com";
@@ -84,7 +84,7 @@ if (error) {
 ```c
 #include <stdio.h>
 #include <stdint.h>
-#include "lib/hpack.h"
+#include "lib/mkhpack.h"
 
 #define CODE_LENGTH 16
 uint8_t code[CODE_LENGTH] = "\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFFXYZ";
