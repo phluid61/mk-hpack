@@ -84,12 +84,24 @@ $(LIBDIR)/%.h: $(SRCDIR)/%.h
 	$(CP) $< $@
 
 #
-# The distribution
+# Distributions
 #
 
-DISTFILE=$(DIST).tar.gz
-$(DISTFILE): lib
-	tar cvzf $(DISTFILE) --transform='s,$(LIBDIR)/,$(DIST)/,' $(HEADERS) $(LIBS)
+SDISTFILE=$(DIST)-src.tar.gz
+BDISTFILE=$(DIST).tar.gz
+
+SDIST_FILES = src/hpack.c src/hpack.h src/hpack_errors.h \
+              huffman_codes.rb str.h mkhpack.pc.in \
+              Makefile Makefile.inc LICENSE README.md
+
+$(SDISTFILE):
+	tar czf $(SDISTFILE) --transform='s,^,$(DIST)/,' $(SDIST_FILES)
+
+$(BDISTFILE): lib
+	tar czf $(BDISTFILE) \
+		--transform='s,^$(LIBDIR)/,,' \
+		--transform='s,^,$(DIST)/,' \
+		$(LIBS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) LICENSE README.md
 
 #
 # Huffman Codes
@@ -155,17 +167,19 @@ $(foreach bnch,$(BENCH_NAMES),$(eval $(call BENCH_RULES,$(BENCHDIR)/bench-$(bnch
 # Typical targets
 #
 
-.PHONY: lib dist clean distclean install uninstall
+.PHONY: lib sdist bdist dist clean distclean install uninstall
 
 lib: $(HEADERS) $(LIBS) $(STATIC_LIBS) $(PCFILE)
 
-dist: $(DISTFILE)
+sdist: $(SDISTFILE)
+bdist: $(BDISTFILE)
+dist: bdist
 
 clean:
 	-rm $(OBJECTS) $(LIBS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
 
 distclean:
-	-rm $(DISTFILE)
+	-rm -f $(SDISTFILE) $(BDISTFILE)
 
 install: lib
 	install -d $(DESTDIR)$(PREFIX)/lib
