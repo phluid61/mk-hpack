@@ -1,0 +1,9 @@
+prefix=@PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: mkhpack
+Description: HPACK (RFC 7541) header compression for HTTP/2
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lmkhpack

@@ -18,6 +18,9 @@ BENCHFLAGS=-Wl,--no-as-needed
 VERSION=1.0.0
 DIST=mkhpack-$(VERSION)
 
+# Install paths
+PREFIX?=/usr/local
+
 # Names of target libraries
 NAMES = hpack
 
@@ -96,6 +99,15 @@ $(HUFF_CODES): huffman_codes.rb
 	ruby $< > $@
 
 #
+# pkg-config
+#
+
+PCFILE=$(LIBDIR)/mkhpack.pc
+
+$(PCFILE): mkhpack.pc.in Makefile
+	sed -e 's,@PREFIX@,$(PREFIX),g' -e 's,@VERSION@,$(VERSION),g' $< > $@
+
+#
 # Tests
 #
 
@@ -143,17 +155,31 @@ $(foreach bnch,$(BENCH_NAMES),$(eval $(call BENCH_RULES,$(BENCHDIR)/bench-$(bnch
 # Typical targets
 #
 
-.PHONY: lib dist clean distclean
+.PHONY: lib dist clean distclean install uninstall
 
-lib: $(HEADERS) $(LIBS) $(STATIC_LIBS)
+lib: $(HEADERS) $(LIBS) $(STATIC_LIBS) $(PCFILE)
 
 dist: $(DISTFILE)
 
 clean:
-	-rm $(OBJECTS) $(LIBS) $(STATIC_LIBS) $(HEADERS) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
+	-rm $(OBJECTS) $(LIBS) $(STATIC_LIBS) $(HEADERS) $(PCFILE) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
 
 distclean:
 	-rm $(DISTFILE)
+
+install: lib
+	install -d $(DESTDIR)$(PREFIX)/lib
+	install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
+	install -d $(DESTDIR)$(PREFIX)/include
+	install -m 755 $(LIBS) $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 $(STATIC_LIBS) $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 $(HEADERS) $(DESTDIR)$(PREFIX)/include/
+	install -m 644 $(PCFILE) $(DESTDIR)$(PREFIX)/lib/pkgconfig/
+
+uninstall:
+	-rm $(addprefix $(DESTDIR)$(PREFIX)/lib/,$(notdir $(LIBS) $(STATIC_LIBS)))
+	-rm $(addprefix $(DESTDIR)$(PREFIX)/include/,$(notdir $(HEADERS)))
+	-rm $(DESTDIR)$(PREFIX)/lib/pkgconfig/mkhpack.pc
 
 
 .PHONY: tests check benchmarks bench
