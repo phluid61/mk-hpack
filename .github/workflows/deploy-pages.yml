@@ -1,0 +1,40 @@
+name: Build GitHub Pages (gh-pages)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["gh-pages"]
+    paths-ignore:
+      - 'index.html'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - name: Build site
+        run: bundle exec rake compile
+      - name: Commit index.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes to index.html"
+          else
+            git commit -m "Build index.html"
+            git push
+          fi
