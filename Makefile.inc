@@ -5,3 +5,4 @@ CC=/usr/bin/gcc
 CFLAGS=-Wall
 OBJ_CFLAGS=-fPIC -Wl,--relocatable
 CP=/bin/cp
+AR=/usr/bin/ar

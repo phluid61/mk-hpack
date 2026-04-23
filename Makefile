@@ -14,8 +14,8 @@ TESTFLAGS=
 BENCHLIB=benchmark-custom
 BENCHFLAGS=-Wl,--no-as-needed
 
-# For file naming
-VERSION=$(shell date +%Y%m%d)
+# Version
+VERSION=1.0.0
 DIST=mkhpack-$(VERSION)
 
 # Names of target libraries
@@ -27,14 +27,16 @@ BENCH_NAMES = huffman
 HUFF_CODES = $(SRCDIR)/huffman_codes.inc
 
 # Headers & Sources for building target libraries
-hpack_HEADER = $(SRCDIR)/hpack.h
-hpack_SOURCE = $(SRCDIR)/hpack.c
-hpack_DEPS   = $(HUFF_CODES)
+hpack_LIBNAME = mkhpack
+hpack_HEADER  = $(SRCDIR)/hpack.h
+hpack_SOURCE  = $(SRCDIR)/hpack.c
+hpack_DEPS    = $(HUFF_CODES)
 
 # Lists ...
-OBJECTS :=
-HEADERS :=
-LIBS    :=
+OBJECTS     :=
+HEADERS     :=
+LIBS        :=
+STATIC_LIBS :=
 
 TEST_OBJECTS  :=
 BENCH_OBJECTS :=
@@ -54,16 +56,20 @@ all: lib
 
 define LIBRARY_RULES
 ifeq (,$$(findstring /$(1).o,$$(OBJECTS)))
-	OBJECTS += $(OBJDIR)/$(1).o
-	HEADERS += $(LIBDIR)/$(1).h
-	LIBS += $(LIBDIR)/$(1).so
+	OBJECTS     += $(OBJDIR)/$(1).o
+	HEADERS     += $(LIBDIR)/$(1).h
+	LIBS        += $(LIBDIR)/lib$$($(1)_LIBNAME).so
+	STATIC_LIBS += $(LIBDIR)/lib$$($(1)_LIBNAME).a
 endif
 # Object
 $(OBJDIR)/$(1).o: $$($(1)_SOURCE) $$($(1)_HEADER) $$($(1)_DEPS)
 	$$(CC) $$(OBJ_CFLAGS) $$(CFLAGS) -c $$< -o $$@
 # Shared object
-$(LIBDIR)/$(1).so: $(OBJDIR)/$(1).o
+$(LIBDIR)/lib$$($(1)_LIBNAME).so: $(OBJDIR)/$(1).o
 	$$(CC) -shared $$< -o $$@
+# Static library
+$(LIBDIR)/lib$$($(1)_LIBNAME).a: $(OBJDIR)/$(1).o
+	$$(AR) rcs $$@ $$<
 endef
 $(foreach lib,$(NAMES),$(eval $(call LIBRARY_RULES,$(lib))))
 
@@ -139,12 +145,12 @@ $(foreach bnch,$(BENCH_NAMES),$(eval $(call BENCH_RULES,$(BENCHDIR)/bench-$(bnch
 
 .PHONY: lib dist clean distclean
 
-lib: $(HEADERS) $(LIBS)
+lib: $(HEADERS) $(LIBS) $(STATIC_LIBS)
 
 dist: $(DISTFILE)
 
 clean:
-	-rm $(OBJECTS) $(LIBS) $(HEADERS) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
+	-rm $(OBJECTS) $(LIBS) $(STATIC_LIBS) $(HEADERS) $(TESTS) $(TEST_OBJECTS) $(BENCHES) $(BENCH_OBJECTS)
 
 distclean:
 	-rm $(DISTFILE)
