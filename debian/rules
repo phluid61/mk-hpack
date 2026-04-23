@@ -4,7 +4,7 @@
 	dh $@
 
 override_dh_auto_build:
-	$(MAKE) lib
+	$(MAKE) lib PREFIX=/usr
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp PREFIX=/usr
