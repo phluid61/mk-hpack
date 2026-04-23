@@ -24,13 +24,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-
       - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install -y debhelper
+        run: sudo apt-get update && sudo apt-get install -y build-essential debhelper ruby
 
       - name: Extract version
         id: version
@@ -43,7 +38,7 @@ jobs:
         env:
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          if git rev-parse "${TAG}" >/dev/null 2>&1; then
+          if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q .; then
             echo "::notice::Tag ${TAG} already exists, skipping release."
             echo "skip=true" >> "$GITHUB_ENV"
           fi
