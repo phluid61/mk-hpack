@@ -131,7 +131,7 @@ int hpack_decode_int(
 	return ERROR_NONE;
 }
 
-static inline int __hpack_encode_str(
+static inline int hpack_encode_str_(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t prefix,
 		uint8_t *buff, size_t n, size_t *produced
@@ -161,14 +161,14 @@ int hpack_encode_raw_str(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t *buff, size_t n, size_t *produced
 ) {
-	return __hpack_encode_str(str, bytesize, consumed, 0x00, buff, n, produced);
+	return hpack_encode_str_(str, bytesize, consumed, 0x00, buff, n, produced);
 }
 
 int hpack_encode_huff_str(
 		uint8_t *str, size_t bytesize, size_t *consumed,
 		uint8_t *buff, size_t n, size_t *produced
 ) {
-	return __hpack_encode_str(str, bytesize, consumed, HUFFMAN_FLAG, buff, n, produced);
+	return hpack_encode_str_(str, bytesize, consumed, HUFFMAN_FLAG, buff, n, produced);
 }
 
 int hpack_encode_str(
@@ -195,7 +195,7 @@ int hpack_encode_str(
 		return ERROR_NONE;
 	} else {
 		/* no gain from huffman coding */
-		return __hpack_encode_str(str, bytesize, consumed, 0x00, buff, n, produced);
+		return hpack_encode_str_(str, bytesize, consumed, 0x00, buff, n, produced);
 	}
 }
 
