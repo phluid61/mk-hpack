@@ -63,106 +63,106 @@
 			</nav>
 			<div class="container">
 <h1><a href="#hpack---http2-compression" aria-hidden="true" class="anchor" id="hpack---http2-compression"></a>HPACK - HTTP/2 Compression</h1>
-<p>This is a basic implementation of HPACK: Header Compression for HTTP/2 as specified<br />
+<p>This is a basic implementation of HPACK: Header Compression for HTTP/2 as specified
 in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 <p><a href="code_of_conduct.md"><img src="https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg" alt="Contributor Covenant" /></a></p>
 <h2><a href="#to-build" aria-hidden="true" class="anchor" id="to-build"></a>To build</h2>
-<pre><code>make dist
-</code></pre>
+<pre style="background-color:#2b303b;"><code><span style="color:#c0c5ce;">make dist
+</span></code></pre>
 <h2><a href="#to-use" aria-hidden="true" class="anchor" id="to-use"></a>To use</h2>
 <p>These examples use static linking:</p>
 <h3><a href="#hpack-integer-encoding" aria-hidden="true" class="anchor" id="hpack-integer-encoding"></a>HPACK integer encoding</h3>
-<pre lang="c"><code>#include &lt;stdio.h&gt;
-#include &lt;stdint.h&gt;
-#include &quot;lib/mkhpack.h&quot;
-
-HPACK_INT_T i = 987; /* number to encode */
-size_t  nbits = 6;   /* number of bits to occupy in the first byte */
-uint8_t pbits = 0x40; /* initial value of the first byte */
-
-#define BUFFER_SIZE 4321
-uint8_t buffer[BUFFER_SIZE];
-size_t  written;      /* will hold the number of bytes written */
-
-int error = mkhpack_encode_int(i, nbits, pbits, buffer, BUFFER_SIZE, &amp;written);
-if (error) {
-    fprintf(stderr, &quot;Error encoding integer: %d\n&quot;, error);
-} else {
-    printf(&quot;Encoded integer in %zu bytes\n&quot;, written);
-}
-</code></pre>
-<pre lang="c"><code>#include &lt;stdio.h&gt;
-#include &lt;stdint.h&gt;
-#include &quot;lib/mkhpack.h&quot;
-
-#define CODE_LENGTH 10
-uint8_t code[CODE_LENGTH] = &quot;\xFF\xF2\x81\xC0\x80\x01XYZ&quot;;
-size_t  consumed;     /* will hold the number of bytes read */
-size_t  nbits = 6;    /* number of bits to occupy in the first byte */
-
-HPACK_INT_T i;        /* decoded integer */
-uint8_t pbits;        /* will hold remainder of the first byte */
-
-int error = mkhpack_decode_int(code, CODE_LENGTH, &amp;consumed, nbits, &amp;i, &amp;pbits);
-if (error) {
-    fprintf(stderr, &quot;Error decoding integer: %d\n&quot;, error);
-} else {
-    printf(&quot;Decoded integer[%lu] from %zu bytes, prefix was %02x\n&quot;,
-        (unsigned long)i, consumed, pbits);
-}
-</code></pre>
+<pre lang="c" style="background-color:#2b303b;"><code><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdio.h</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdint.h</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">lib/mkhpack.h</span><span style="color:#c0c5ce;">&quot;
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#c0c5ce;">HPACK_INT_T i = </span><span style="color:#d08770;">987</span><span style="color:#c0c5ce;">; </span><span style="color:#65737e;">/* number to encode */
+</span><span style="color:#c0c5ce;">size_t  nbits = </span><span style="color:#d08770;">6</span><span style="color:#c0c5ce;">;   </span><span style="color:#65737e;">/* number of bits to occupy in the first byte */
+</span><span style="color:#c0c5ce;">uint8_t pbits = </span><span style="color:#d08770;">0x40</span><span style="color:#c0c5ce;">; </span><span style="color:#65737e;">/* initial value of the first byte */
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">#define </span><span style="color:#c0c5ce;">BUFFER_SIZE </span><span style="color:#d08770;">4321
+</span><span style="color:#c0c5ce;">uint8_t buffer[BUFFER_SIZE];
+</span><span style="color:#c0c5ce;">size_t  written;      </span><span style="color:#65737e;">/* will hold the number of bytes written */
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;"> error = </span><span style="color:#8fa1b3;">mkhpack_encode_int</span><span style="color:#c0c5ce;">(i, nbits, pbits, buffer, BUFFER_SIZE, &amp;written);
+</span><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">(error) {
+</span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">fprintf</span><span style="color:#c0c5ce;">(stderr, &quot;</span><span style="color:#a3be8c;">Error encoding integer: </span><span style="color:#d08770;">%d</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;, error);
+</span><span style="color:#c0c5ce;">} </span><span style="color:#b48ead;">else </span><span style="color:#c0c5ce;">{
+</span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">printf</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">Encoded integer in </span><span style="color:#d08770;">%zu</span><span style="color:#a3be8c;"> bytes</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;, written);
+</span><span style="color:#c0c5ce;">}
+</span></code></pre>
+<pre lang="c" style="background-color:#2b303b;"><code><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdio.h</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdint.h</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">lib/mkhpack.h</span><span style="color:#c0c5ce;">&quot;
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">#define </span><span style="color:#c0c5ce;">CODE_LENGTH </span><span style="color:#d08770;">10
+</span><span style="color:#c0c5ce;">uint8_t code[CODE_LENGTH] = &quot;</span><span style="color:#96b5b4;">\xFF\xF2\x81\xC0\x80\x01</span><span style="color:#a3be8c;">XYZ</span><span style="color:#c0c5ce;">&quot;;
+</span><span style="color:#c0c5ce;">size_t  consumed;     </span><span style="color:#65737e;">/* will hold the number of bytes read */
+</span><span style="color:#c0c5ce;">size_t  nbits = </span><span style="color:#d08770;">6</span><span style="color:#c0c5ce;">;    </span><span style="color:#65737e;">/* number of bits to occupy in the first byte */
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#c0c5ce;">HPACK_INT_T i;        </span><span style="color:#65737e;">/* decoded integer */
+</span><span style="color:#c0c5ce;">uint8_t pbits;        </span><span style="color:#65737e;">/* will hold remainder of the first byte */
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;"> error = </span><span style="color:#8fa1b3;">mkhpack_decode_int</span><span style="color:#c0c5ce;">(code, CODE_LENGTH, &amp;consumed, nbits, &amp;i, &amp;pbits);
+</span><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">(error) {
+</span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">fprintf</span><span style="color:#c0c5ce;">(stderr, &quot;</span><span style="color:#a3be8c;">Error decoding integer: </span><span style="color:#d08770;">%d</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;, error);
+</span><span style="color:#c0c5ce;">} </span><span style="color:#b48ead;">else </span><span style="color:#c0c5ce;">{
+</span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">printf</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">Decoded integer[</span><span style="color:#d08770;">%lu</span><span style="color:#a3be8c;">] from </span><span style="color:#d08770;">%zu</span><span style="color:#a3be8c;"> bytes, prefix was </span><span style="color:#d08770;">%02x</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;,
+</span><span style="color:#c0c5ce;">        (</span><span style="color:#b48ead;">unsigned long</span><span style="color:#c0c5ce;">)i, consumed, pbits);
+</span><span style="color:#c0c5ce;">}
+</span></code></pre>
 <h3><a href="#huffman-string-encoding" aria-hidden="true" class="anchor" id="huffman-string-encoding"></a>Huffman string encoding</h3>
-<pre lang="c"><code>#include &lt;stdio.h&gt;
-#include &lt;stdint.h&gt;
-#include &quot;lib/mkhpack.h&quot;
-
-#define STRING_LENGTH 16
-uint8_t string[STRING_LENGTH] = &quot;www.example.com&quot;;
-
-#define BUFFER_SIZE 4321
-uint8_t buffer[BUFFER_SIZE];
-size_t  written;      /* will hold the number of bytes written */
-
-int error = huffman_encode(string, STRING_LENGTH, NULL, buffer, BUFFER_SIZE, &amp;written);
-if (error) {
-    fprintf(stderr, &quot;Error encoding string: %d\n&quot;, error);
-} else {
-    printf(&quot;Encoded %d-byte string in %zu bytes\n&quot;, STRING_LENGTH, written);
-}
-</code></pre>
-<pre lang="c"><code>#include &lt;stdio.h&gt;
-#include &lt;stdint.h&gt;
-#include &quot;lib/mkhpack.h&quot;
-
-#define CODE_LENGTH 16
-uint8_t code[CODE_LENGTH] = &quot;\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFFXYZ&quot;;
-size_t  consumed;     /* will hold the number of bytes read */
-
-#define BUFFER_SIZE 4321
-uint8_t buffer[BUFFER_SIZE];
-size_t  written;      /* will hold the number of bytes written */
-
-int error = huffman_decode(code, CODE_LENGTH, &amp;consumed, buffer, BUFFER_SIZE, &amp;written);
-if (error) {
-    fprintf(stderr, &quot;Error decoding string: %d\n&quot;, error);
-} else {
-    printf(&quot;Decoded %zu-byte string from %zu bytes\n&quot;, written, consumed);
-}
-</code></pre>
+<pre lang="c" style="background-color:#2b303b;"><code><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdio.h</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdint.h</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">lib/mkhpack.h</span><span style="color:#c0c5ce;">&quot;
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">#define </span><span style="color:#c0c5ce;">STRING_LENGTH </span><span style="color:#d08770;">16
+</span><span style="color:#c0c5ce;">uint8_t string[STRING_LENGTH] = &quot;</span><span style="color:#a3be8c;">www.example.com</span><span style="color:#c0c5ce;">&quot;;
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">#define </span><span style="color:#c0c5ce;">BUFFER_SIZE </span><span style="color:#d08770;">4321
+</span><span style="color:#c0c5ce;">uint8_t buffer[BUFFER_SIZE];
+</span><span style="color:#c0c5ce;">size_t  written;      </span><span style="color:#65737e;">/* will hold the number of bytes written */
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;"> error = </span><span style="color:#8fa1b3;">huffman_encode</span><span style="color:#c0c5ce;">(string, STRING_LENGTH, </span><span style="color:#d08770;">NULL</span><span style="color:#c0c5ce;">, buffer, BUFFER_SIZE, &amp;written);
+</span><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">(error) {
+</span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">fprintf</span><span style="color:#c0c5ce;">(stderr, &quot;</span><span style="color:#a3be8c;">Error encoding string: </span><span style="color:#d08770;">%d</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;, error);
+</span><span style="color:#c0c5ce;">} </span><span style="color:#b48ead;">else </span><span style="color:#c0c5ce;">{
+</span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">printf</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">Encoded </span><span style="color:#d08770;">%d</span><span style="color:#a3be8c;">-byte string in </span><span style="color:#d08770;">%zu</span><span style="color:#a3be8c;"> bytes</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;, STRING_LENGTH, written);
+</span><span style="color:#c0c5ce;">}
+</span></code></pre>
+<pre lang="c" style="background-color:#2b303b;"><code><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdio.h</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdint.h</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">lib/mkhpack.h</span><span style="color:#c0c5ce;">&quot;
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">#define </span><span style="color:#c0c5ce;">CODE_LENGTH </span><span style="color:#d08770;">16
+</span><span style="color:#c0c5ce;">uint8_t code[CODE_LENGTH] = &quot;</span><span style="color:#96b5b4;">\xE7\xCF\x9B\xEB\xE8\x9B\x6F\xB1\x6F\xA9\xB6\xFF</span><span style="color:#a3be8c;">XYZ</span><span style="color:#c0c5ce;">&quot;;
+</span><span style="color:#c0c5ce;">size_t  consumed;     </span><span style="color:#65737e;">/* will hold the number of bytes read */
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">#define </span><span style="color:#c0c5ce;">BUFFER_SIZE </span><span style="color:#d08770;">4321
+</span><span style="color:#c0c5ce;">uint8_t buffer[BUFFER_SIZE];
+</span><span style="color:#c0c5ce;">size_t  written;      </span><span style="color:#65737e;">/* will hold the number of bytes written */
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;"> error = </span><span style="color:#8fa1b3;">huffman_decode</span><span style="color:#c0c5ce;">(code, CODE_LENGTH, &amp;consumed, buffer, BUFFER_SIZE, &amp;written);
+</span><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">(error) {
+</span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">fprintf</span><span style="color:#c0c5ce;">(stderr, &quot;</span><span style="color:#a3be8c;">Error decoding string: </span><span style="color:#d08770;">%d</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;, error);
+</span><span style="color:#c0c5ce;">} </span><span style="color:#b48ead;">else </span><span style="color:#c0c5ce;">{
+</span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">printf</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">Decoded </span><span style="color:#d08770;">%zu</span><span style="color:#a3be8c;">-byte string from </span><span style="color:#d08770;">%zu</span><span style="color:#a3be8c;"> bytes</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;, written, consumed);
+</span><span style="color:#c0c5ce;">}
+</span></code></pre>
 <h2><a href="#contributor-code-of-conduct" aria-hidden="true" class="anchor" id="contributor-code-of-conduct"></a>Contributor Code of Conduct</h2>
-<p>This repository is subject to a <a href="code_of_conduct.md">Contributor Code of Conduct</a><br />
-adapted from the <a href="http://contributor-covenant.org">Contributor Covenant</a>, version 2.1, available at<br />
+<p>This repository is subject to a <a href="code_of_conduct.md">Contributor Code of Conduct</a>
+adapted from the <a href="http://contributor-covenant.org">Contributor Covenant</a>, version 2.1, available at
 <a href="http://contributor-covenant.org/version/2/1">http://contributor-covenant.org/version/2/1</a></p>
 <h2><a href="#licence" aria-hidden="true" class="anchor" id="licence"></a>Licence</h2>
-<p>This project is licensed under the ISC licence. See <a href="LICENSE">LICENSE</a><br />
+<p>This project is licensed under the ISC licence. See <a href="LICENSE">LICENSE</a>
 for details.</p>
-<pre id="license" class="no-highlight">Copyright (c) 2014, 2021, 2026, Matthew Kerwin <matthew@kerwin.net.au>
+<pre id="license" class="no-highlight">Copyright (c) 2014, 2021, 2026, Matthew Kerwin &lt;matthew@kerwin.net.au&gt;
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
 copyright notice and this permission notice appear in all copies.
 
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
 ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
@@ -172,17 +172,17 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 </pre><h1><a href="#contributor-covenant-30-code-of-conduct" aria-hidden="true" class="anchor" id="contributor-covenant-30-code-of-conduct"></a>Contributor Covenant 3.0 Code of Conduct</h1>
 <h2><a href="#our-pledge" aria-hidden="true" class="anchor" id="our-pledge"></a>Our Pledge</h2>
 <p>We pledge to make our community welcoming, safe, and equitable for all.</p>
-<p>We are committed to fostering an environment that respects and promotes the dignity, rights, and<br />
-contributions of all individuals, regardless of characteristics including race, ethnicity, caste,<br />
-color, age, physical characteristics, neurodiversity, disability, sex or gender, gender identity or<br />
-expression, sexual orientation, language, philosophy or religion, national or social origin,<br />
-socio-economic position, level of education, or other status. The same privileges of participation<br />
+<p>We are committed to fostering an environment that respects and promotes the dignity, rights, and
+contributions of all individuals, regardless of characteristics including race, ethnicity, caste,
+color, age, physical characteristics, neurodiversity, disability, sex or gender, gender identity or
+expression, sexual orientation, language, philosophy or religion, national or social origin,
+socio-economic position, level of education, or other status. The same privileges of participation
 are extended to everyone who participates in good faith and in accordance with this Covenant.</p>
 <h2><a href="#encouraged-behaviors" aria-hidden="true" class="anchor" id="encouraged-behaviors"></a>Encouraged Behaviors</h2>
-<p>While acknowledging differences in social norms, we all strive to meet our community's expectations<br />
-for positive behavior. We also understand that our words and actions may be interpreted differently<br />
+<p>While acknowledging differences in social norms, we all strive to meet our community's expectations
+for positive behavior. We also understand that our words and actions may be interpreted differently
 than we intend based on culture, background, or native language.</p>
-<p>With these considerations in mind, we agree to behave mindfully toward each other and act in ways<br />
+<p>With these considerations in mind, we agree to behave mindfully toward each other and act in ways
 that center our shared values, including:</p>
 <ol>
 <li>Respecting the <strong>purpose of our community</strong>, our activities, and our ways of gathering.</li>
@@ -194,7 +194,7 @@ that center our shared values, including:</p>
 <li>Behaving in other ways that promote and sustain the <strong>well-being of our community</strong>.</li>
 </ol>
 <h2><a href="#restricted-behaviors" aria-hidden="true" class="anchor" id="restricted-behaviors"></a>Restricted Behaviors</h2>
-<p>We agree to restrict the following behaviors in our community. Instances, threats, and promotion of<br />
+<p>We agree to restrict the following behaviors in our community. Instances, threats, and promotion of
 these behaviors are violations of this Code of Conduct.</p>
 <ol>
 <li><strong>Harassment.</strong> Violating explicitly expressed boundaries or engaging in unnecessary personal attention after any clear request to stop.</li>
@@ -213,22 +213,22 @@ these behaviors are violations of this Code of Conduct.</p>
 <li><strong>Irresponsible communication.</strong> Failing to responsibly present content which includes, links or describes any other restricted behaviors.</li>
 </ol>
 <h2><a href="#reporting-an-issue" aria-hidden="true" class="anchor" id="reporting-an-issue"></a>Reporting an Issue</h2>
-<p>Tensions can occur between community members even when they are trying their best to collaborate.<br />
-Not every conflict represents a code of conduct violation, and this Code of Conduct reinforces<br />
+<p>Tensions can occur between community members even when they are trying their best to collaborate.
+Not every conflict represents a code of conduct violation, and this Code of Conduct reinforces
 encouraged behaviors and norms that can help avoid conflicts and minimize harm.</p>
-<p>When an incident does occur, it is important to report it promptly. To report a possible violation<br />
+<p>When an incident does occur, it is important to report it promptly. To report a possible violation
 send an email to <a href="mailto:matthew@kerwin.net.au">matthew@kerwin.net.au</a></p>
-<p>Community Moderators take reports of violations seriously and will make every effort to respond in a<br />
-timely manner. They will investigate all reports of code of conduct violations, reviewing messages,<br />
-logs, and recordings, or interviewing witnesses and other participants. Community Moderators will<br />
-keep investigation and enforcement actions as transparent as possible while prioritizing safety and<br />
-confidentiality. In order to honor these values, enforcement actions are carried out in private with<br />
-the involved parties, but communicating to the whole community may be part of a mutually agreed upon<br />
+<p>Community Moderators take reports of violations seriously and will make every effort to respond in a
+timely manner. They will investigate all reports of code of conduct violations, reviewing messages,
+logs, and recordings, or interviewing witnesses and other participants. Community Moderators will
+keep investigation and enforcement actions as transparent as possible while prioritizing safety and
+confidentiality. In order to honor these values, enforcement actions are carried out in private with
+the involved parties, but communicating to the whole community may be part of a mutually agreed upon
 resolution.</p>
 <h2><a href="#addressing-and-repairing-harm" aria-hidden="true" class="anchor" id="addressing-and-repairing-harm"></a>Addressing and Repairing Harm</h2>
-<p>If an investigation by the Community Moderators finds that this Code of Conduct has been violated,<br />
-the following enforcement ladder may be used to determine how best to repair harm, based on the<br />
-incident's impact on the individuals involved and the community as a whole. Depending on the<br />
+<p>If an investigation by the Community Moderators finds that this Code of Conduct has been violated,
+the following enforcement ladder may be used to determine how best to repair harm, based on the
+incident's impact on the individuals involved and the community as a whole. Depending on the
 severity of a violation, lower rungs on the ladder may be skipped.</p>
 <ol>
 <li>Warning
@@ -260,26 +260,26 @@ severity of a violation, lower rungs on the ladder may be skipped.</p>
 </ol>
 </li>
 </ol>
-<p>This enforcement ladder is intended as a guideline. It does not limit the ability of Community<br />
+<p>This enforcement ladder is intended as a guideline. It does not limit the ability of Community
 Managers to use their discretion and judgment, in keeping with the best interests of our community.</p>
 <h2><a href="#scope" aria-hidden="true" class="anchor" id="scope"></a>Scope</h2>
-<p>This Code of Conduct applies within all community spaces, and also applies when an individual is<br />
-officially representing the community in public or other spaces. Examples of representing our<br />
-community include using an official email address, posting via an official social media account, or<br />
+<p>This Code of Conduct applies within all community spaces, and also applies when an individual is
+officially representing the community in public or other spaces. Examples of representing our
+community include using an official email address, posting via an official social media account, or
 acting as an appointed representative at an online or offline event.</p>
 <h2><a href="#attribution" aria-hidden="true" class="anchor" id="attribution"></a>Attribution</h2>
-<p>This Code of Conduct is adapted from the Contributor Covenant, version 3.0, permanently available at<br />
+<p>This Code of Conduct is adapted from the Contributor Covenant, version 3.0, permanently available at
 <a href="https://www.contributor-covenant.org/version/3/0/">https://www.contributor-covenant.org/version/3/0/</a>.</p>
-<p>Contributor Covenant is stewarded by the Organization for Ethical Source and licensed under CC BY-SA<br />
-4.0. To view a copy of this license, visit<br />
+<p>Contributor Covenant is stewarded by the Organization for Ethical Source and licensed under CC BY-SA
+4.0. To view a copy of this license, visit
 <a href="https://creativecommons.org/licenses/by-sa/4.0/">https://creativecommons.org/licenses/by-sa/4.0/</a></p>
-<p>For answers to common questions about Contributor Covenant, see the FAQ at<br />
-<a href="https://www.contributor-covenant.org/faq">https://www.contributor-covenant.org/faq</a>.<br />
-Translations are provided at<br />
-<a href="https://www.contributor-covenant.org/translations">https://www.contributor-covenant.org/translations</a>.<br />
-Additional enforcement and community guideline resources can be found at<br />
-<a href="https://www.contributor-covenant.org/resources">https://www.contributor-covenant.org/resources</a>.<br />
-The enforcement ladder was inspired by the work of<br />
+<p>For answers to common questions about Contributor Covenant, see the FAQ at
+<a href="https://www.contributor-covenant.org/faq">https://www.contributor-covenant.org/faq</a>.
+Translations are provided at
+<a href="https://www.contributor-covenant.org/translations">https://www.contributor-covenant.org/translations</a>.
+Additional enforcement and community guideline resources can be found at
+<a href="https://www.contributor-covenant.org/resources">https://www.contributor-covenant.org/resources</a>.
+The enforcement ladder was inspired by the work of
 <a href="https://github.com/mozilla/inclusion">Mozilla’s code of conduct team</a>.</p>
 			<script src="/jquery.min.js"></script>
 			<script src="/bootstrap.min.js"></script>
