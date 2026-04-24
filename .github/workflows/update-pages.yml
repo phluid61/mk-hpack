@@ -50,9 +50,6 @@ jobs:
           require 'cgi'
           require 'fileutils'
 
-          HEAD = File.read('head')
-          TAIL = File.read('tail')
-
           def md_to_html(text)
             Commonmarker.to_html(text, options: { render: { unsafe: true, hardbreaks: false } })
           end
@@ -78,13 +75,11 @@ jobs:
             title ||= extract_title(md)
             body = rewrite_links(md_to_html(md))
             body << extra_html if extra_html
-            head = HEAD.dup
-            if title
-              head = head.sub('<title>mk-hpack</title>',
-                "<title>#{CGI.escapeHTML(title)} \u2014 mk-hpack</title>")
-            end
+            front_matter = "---\nlayout: default\n"
+            front_matter << "title: #{title.inspect}\n" if title
+            front_matter << "---\n"
             FileUtils.mkdir_p(File.dirname(html_file))
-            File.write(html_file, head + body + TAIL)
+            File.write(html_file, front_matter + body)
             puts "Built: #{html_file}"
           end
 
