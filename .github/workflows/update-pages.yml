@@ -75,8 +75,17 @@ jobs:
             title ||= extract_title(md)
             body = rewrite_links(md_to_html(md))
             body << extra_html if extra_html
+            # Convert mermaid code blocks for client-side rendering
+            has_mermaid = body.gsub!(
+              /<pre><code class="language-mermaid">(.*?)<\/code><\/pre>/m,
+              '<pre class="mermaid">\1</pre>'
+            )
             front_matter = "---\nlayout: default\n"
             front_matter << "title: #{title.inspect}\n" if title
+            if has_mermaid
+              front_matter << "extra_head: |\n"
+              front_matter << "  <script src=\"https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js\"></script>\n"
+            end
             front_matter << "---\n"
             FileUtils.mkdir_p(File.dirname(html_file))
             File.write(html_file, front_matter + body)
