@@ -1,5 +1,5 @@
-HPACK — HTTP/2 Compression
-==========================
+MKHPACK — HTTP/2 Compression
+============================
 
 A C implementation of HPACK: Header Compression for HTTP/2 as specified
 in [RFC 7541](https://www.rfc-editor.org/rfc/rfc7541.html).
