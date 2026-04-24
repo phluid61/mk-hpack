@@ -1,0 +1,112 @@
+---
+layout: default
+title: "Troubleshooting"
+---
+<h1><a href="#troubleshooting" aria-hidden="true" class="anchor" id="troubleshooting"></a>Troubleshooting</h1>
+<h2><a href="#build-issues" aria-hidden="true" class="anchor" id="build-issues"></a>Build Issues</h2>
+<h3><a href="#ruby-command-not-found" aria-hidden="true" class="anchor" id="ruby-command-not-found"></a><code>ruby: command not found</code></h3>
+<p>The Huffman table generation step requires Ruby. Install it:</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">sudo</span><span style="color:#c0c5ce;"> apt-get install ruby       </span><span style="color:#65737e;"># Debian/Ubuntu
+</span><span style="color:#8fa1b3;">sudo</span><span style="color:#c0c5ce;"> dnf install ruby           </span><span style="color:#65737e;"># Fedora/RHEL
+</span></code></pre>
+<h3><a href="#gcc-command-not-found-or-wrong-compiler" aria-hidden="true" class="anchor" id="gcc-command-not-found-or-wrong-compiler"></a><code>gcc: command not found</code> or wrong compiler</h3>
+<p>The Makefile expects GCC at <code>/usr/bin/gcc</code>. If your compiler is elsewhere,
+edit <code>Makefile.inc</code> or override on the command line:</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> CC=/path/to/gcc
+</span></code></pre>
+<h3><a href="#linker-errors-with--fpic" aria-hidden="true" class="anchor" id="linker-errors-with--fpic"></a>Linker errors with <code>-fPIC</code></h3>
+<p>Object files must be compiled with <code>-fPIC</code> for the shared library. This is the
+default in <code>Makefile.inc</code> (<code>OBJ_CFLAGS=-fPIC -Wl,--relocatable</code>). If you have
+overridden <code>OBJ_CFLAGS</code>, ensure <code>-fPIC</code> is still included.</p>
+<h3><a href="#huffman_codesinc-out-of-date-or-missing" aria-hidden="true" class="anchor" id="huffman_codesinc-out-of-date-or-missing"></a><code>huffman_codes.inc</code> out of date or missing</h3>
+<p>The Makefile regenerates <code>src/huffman_codes.inc</code> automatically when
+<code>huffman_codes.rb</code> changes. If the file is missing or corrupt, regenerate it
+manually:</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">ruby</span><span style="color:#c0c5ce;"> huffman_codes.rb &gt; src/huffman_codes.inc
+</span></code></pre>
+<p>Then rebuild:</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> clean &amp;&amp; </span><span style="color:#8fa1b3;">make
+</span></code></pre>
+<h2><a href="#test-failures" aria-hidden="true" class="anchor" id="test-failures"></a>Test Failures</h2>
+<h3><a href="#reading-test-output" aria-hidden="true" class="anchor" id="reading-test-output"></a>Reading test output</h3>
+<p>Each test executable prints <code>PASS</code> (green) or an error message (red) for each
+test case, followed by a summary line. The exit code is the number of failures.</p>
+<p><code>make check</code> runs all test executables and prints the failure count:</p>
+<pre lang="text" style="background-color:#2b303b;"><code><span style="color:#c0c5ce;">test/test-huffman
+</span><span style="color:#c0c5ce;">0 test failures
+</span><span style="color:#c0c5ce;">test/test-mkhpack
+</span><span style="color:#c0c5ce;">0 test failures
+</span><span style="color:#c0c5ce;">Done
+</span></code></pre>
+<p>A non-zero failure count indicates which test executable had problems. Run it
+directly for detailed output:</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> lib
+</span><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> test/test-huffman
+</span><span style="color:#8fa1b3;">./test/test-huffman
+</span></code></pre>
+<h3><a href="#common-test-failure-patterns" aria-hidden="true" class="anchor" id="common-test-failure-patterns"></a>Common test failure patterns</h3>
+<ul>
+<li><strong><code>error: 1</code></strong> — <code>ERROR_OVERFLOW</code>: the internal test buffer (1024 bytes) was
+too small for the test case. This would indicate a logic change that increased
+output size unexpectedly.</li>
+<li><strong><code>error: 2</code></strong> — <code>ERROR_TRUNCATED</code>: the test input was consumed before the
+value was fully decoded. Check whether <code>huffman_codes.inc</code> is up to date.</li>
+<li><strong><code>mismatch at byte N</code></strong> — the encoded/decoded output differs from the
+expected value at byte position N. The test prints the input (<code>&lt;</code>), actual
+output (<code>&gt;</code>), and expected output (<code>~</code>) in hex for comparison.</li>
+</ul>
+<h2><a href="#benchmark-issues" aria-hidden="true" class="anchor" id="benchmark-issues"></a>Benchmark Issues</h2>
+<h3><a href="#rdtsc-not-available" aria-hidden="true" class="anchor" id="rdtsc-not-available"></a>RDTSC not available</h3>
+<p>The default benchmark harness (<code>benchmark-custom.c</code>) uses the x86 RDTSC
+instruction. On non-x86 platforms or virtualised environments where RDTSC is
+unavailable, switch to the <code>clock_gettime</code> harness by editing the Makefile:</p>
+<pre lang="makefile" style="background-color:#2b303b;"><code><span style="color:#bf616a;">BENCHLIB</span><span style="color:#c0c5ce;">=</span><span style="color:#a3be8c;">benchmark-gettime
+</span><span style="color:#bf616a;">BENCHFLAGS</span><span style="color:#c0c5ce;">=</span><span style="color:#a3be8c;">-Wl,--no-as-needed -Wl,-lrt
+</span></code></pre>
+<h3><a href="#benchmark-results-vary-wildly" aria-hidden="true" class="anchor" id="benchmark-results-vary-wildly"></a>Benchmark results vary wildly</h3>
+<p>CPU frequency scaling and other processes can affect results. For more stable
+measurements:</p>
+<ol>
+<li>Disable CPU frequency scaling if possible</li>
+<li>Run benchmarks on an otherwise-idle system</li>
+<li>The custom harness attempts to bind to a single CPU core via <code>sched_setaffinity</code></li>
+</ol>
+<h2><a href="#runtime-issues" aria-hidden="true" class="anchor" id="runtime-issues"></a>Runtime Issues</h2>
+<h3><a href="#error_overflow-1-from-encoding-functions" aria-hidden="true" class="anchor" id="error_overflow-1-from-encoding-functions"></a><code>ERROR_OVERFLOW</code> (1) from encoding functions</h3>
+<p>The output buffer is too small for the encoded data. For integer encoding, the
+worst case is 10 bytes (a full 64-bit value with a 1-bit prefix). For Huffman
+encoding, the worst case is approximately 4× the input length (for byte values
+with 30-bit Huffman codes). For string encoding, add the length prefix overhead.</p>
+<h3><a href="#error_truncated-2-from-decoding-functions" aria-hidden="true" class="anchor" id="error_truncated-2-from-decoding-functions"></a><code>ERROR_TRUNCATED</code> (2) from decoding functions</h3>
+<p>The input buffer ended before the encoded value was complete. Ensure the full
+encoded sequence is present in the buffer and that <code>bytesize</code> accurately
+reflects the available data.</p>
+<h3><a href="#error_eos-3-from-huffman_decode" aria-hidden="true" class="anchor" id="error_eos-3-from-huffman_decode"></a><code>ERROR_EOS</code> (3) from <code>huffman_decode()</code></h3>
+<p>The Huffman-encoded data contained the EOS symbol (code point 256), which is
+forbidden in HPACK string data per RFC 7541 §5.2. This typically indicates
+corrupted input.</p>
+<h3><a href="#error_bad_prefix-4-from-integer-functions" aria-hidden="true" class="anchor" id="error_bad_prefix-4-from-integer-functions"></a><code>ERROR_BAD_PREFIX</code> (4) from integer functions</h3>
+<p>Either <code>prefix_bits</code> is outside the range 1–8, or the <code>prefix</code> byte has bits
+set in the region reserved for the integer value. Check that the caller is
+correctly partitioning the first byte.</p>
+<h2><a href="#packaging-issues" aria-hidden="true" class="anchor" id="packaging-issues"></a>Packaging Issues</h2>
+<h3><a href="#debian-build-fails-with-missing-debhelper" aria-hidden="true" class="anchor" id="debian-build-fails-with-missing-debhelper"></a>Debian build fails with missing <code>debhelper</code></h3>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">sudo</span><span style="color:#c0c5ce;"> apt-get install debhelper
+</span></code></pre>
+<p>The <code>debian/control</code> file requires <code>debhelper-compat (= 13)</code>.</p>
+<h3><a href="#rpm-build-spec-file-version-mismatch" aria-hidden="true" class="anchor" id="rpm-build-spec-file-version-mismatch"></a>RPM build: spec file version mismatch</h3>
+<p>The <code>mkhpack.spec</code> file has its own <code>Version:</code> field. If it does not match the
+<code>VERSION</code> in <code>Makefile</code>, the resulting RPM will have a different version string
+from the shared library SONAME. Keep both in sync.</p>
+<h2><a href="#log-analysis" aria-hidden="true" class="anchor" id="log-analysis"></a>Log Analysis</h2>
+<blockquote>
+<p>⚠️ <strong>LOW CONFIDENCE</strong>: mkhpack is a library, not a service, and does not
+produce log files. If a consuming application logs mkhpack errors, consult
+that application's documentation for log file locations.</p>
+</blockquote>
+<h2><a href="#getting-help" aria-hidden="true" class="anchor" id="getting-help"></a>Getting Help</h2>
+<ul>
+<li>File a bug report: <a href="https://github.com/phluid61/mk-hpack/issues/new?template=bug_report.md">GitHub Issues</a></li>
+<li>Request a feature: <a href="https://github.com/phluid61/mk-hpack/issues/new?template=feature_request.md">GitHub Issues</a></li>
+<li>RFC 7541 specification: <a href="https://www.rfc-editor.org/rfc/rfc7541.html">rfc-editor.org/rfc/rfc7541</a></li>
+</ul>

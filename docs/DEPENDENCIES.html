@@ -1,0 +1,131 @@
+---
+layout: default
+title: "Dependencies"
+---
+<h1><a href="#dependencies" aria-hidden="true" class="anchor" id="dependencies"></a>Dependencies</h1>
+<h2><a href="#runtime-dependencies" aria-hidden="true" class="anchor" id="runtime-dependencies"></a>Runtime Dependencies</h2>
+<p>mkhpack has <strong>no runtime dependencies</strong> beyond the C standard library. The
+shared library (<code>libmkhpack.so</code>) is self-contained.</p>
+<h2><a href="#build-dependencies" aria-hidden="true" class="anchor" id="build-dependencies"></a>Build Dependencies</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GCC</td>
+<td>C compiler (path configured in <code>Makefile.inc</code>)</td>
+</tr>
+<tr>
+<td>GNU Make</td>
+<td>Build orchestration</td>
+</tr>
+<tr>
+<td>Ruby</td>
+<td>Code generation — runs <code>huffman_codes.rb</code> to produce <code>src/huffman_codes.inc</code></td>
+</tr>
+<tr>
+<td>ar</td>
+<td>Creates the static library (<code>libmkhpack.a</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2><a href="#packaging-dependencies" aria-hidden="true" class="anchor" id="packaging-dependencies"></a>Packaging Dependencies</h2>
+<h3><a href="#debian" aria-hidden="true" class="anchor" id="debian"></a>Debian</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>debhelper-compat</code></td>
+<td>= 13</td>
+<td>Debian build helper framework</td>
+</tr>
+<tr>
+<td><code>ruby</code></td>
+<td>any</td>
+<td>Huffman table generation during build</td>
+</tr>
+<tr>
+<td><code>build-essential</code></td>
+<td>any</td>
+<td>GCC, make, and related tools (meta-package)</td>
+</tr>
+</tbody>
+</table>
+<h3><a href="#rpm" aria-hidden="true" class="anchor" id="rpm"></a>RPM</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gcc</code></td>
+<td>C compiler</td>
+</tr>
+<tr>
+<td><code>make</code></td>
+<td>Build orchestration</td>
+</tr>
+<tr>
+<td><code>ruby</code></td>
+<td>Huffman table generation during build</td>
+</tr>
+</tbody>
+</table>
+<h2><a href="#cicd-dependencies" aria-hidden="true" class="anchor" id="cicd-dependencies"></a>CI/CD Dependencies</h2>
+<p>The release workflow (<code>release.yml</code>) installs these packages on <code>ubuntu-latest</code>:</p>
+<ul>
+<li><code>build-essential</code></li>
+<li><code>debhelper</code></li>
+<li><code>ruby</code></li>
+</ul>
+<p>The GitHub Pages workflow (<code>update-pages.yml</code>) additionally requires:</p>
+<ul>
+<li>Ruby 3.3 (via <code>ruby/setup-ruby@v1</code>)</li>
+<li>Bundler and the project's <code>gh-pages</code> branch Gemfile</li>
+</ul>
+<h2><a href="#test-dependencies" aria-hidden="true" class="anchor" id="test-dependencies"></a>Test Dependencies</h2>
+<p>Tests are written using a custom harness (<code>test/common.{c,h}</code>) with no external
+test framework.</p>
+<h2><a href="#benchmark-dependencies" aria-hidden="true" class="anchor" id="benchmark-dependencies"></a>Benchmark Dependencies</h2>
+<p>Benchmarks use one of two timing harnesses, both included in the repository:</p>
+<ul>
+<li><code>benchmark-custom.c</code> — uses the x86 RDTSC instruction (default)</li>
+<li><code>benchmark-gettime.c</code> — uses POSIX <code>clock_gettime</code></li>
+</ul>
+<p>No external benchmark libraries are required.</p>
+<h2><a href="#development-tool-dependencies" aria-hidden="true" class="anchor" id="development-tool-dependencies"></a>Development Tool Dependencies</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pkg-config</code></td>
+<td>Optional; consumers use it to discover compiler/linker flags</td>
+</tr>
+<tr>
+<td><code>sed</code></td>
+<td>Used by Makefile to generate <code>lib/mkhpack.pc</code> from template</td>
+</tr>
+<tr>
+<td><code>ln</code></td>
+<td>Used by Makefile to create shared library symlinks</td>
+</tr>
+</tbody>
+</table>

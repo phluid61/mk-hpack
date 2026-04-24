@@ -1,0 +1,141 @@
+---
+layout: default
+title: "Developer Guide"
+---
+<h1><a href="#developer-guide" aria-hidden="true" class="anchor" id="developer-guide"></a>Developer Guide</h1>
+<h2><a href="#prerequisites" aria-hidden="true" class="anchor" id="prerequisites"></a>Prerequisites</h2>
+<ul>
+<li><strong>GCC</strong> — the Makefile hardcodes <code>/usr/bin/gcc</code> (configurable in <code>Makefile.inc</code>)</li>
+<li><strong>GNU Make</strong></li>
+<li><strong>Ruby</strong> — required to regenerate the Huffman code tables (<code>huffman_codes.rb</code>)</li>
+<li><strong>ar</strong> — for building the static library (path configured in <code>Makefile.inc</code>)</li>
+<li><strong>pkg-config</strong> — optional, for consumers linking against the installed library</li>
+</ul>
+<p>On Debian/Ubuntu:</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">sudo</span><span style="color:#c0c5ce;"> apt-get install build-essential ruby
+</span></code></pre>
+<h2><a href="#getting-started" aria-hidden="true" class="anchor" id="getting-started"></a>Getting Started</h2>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> clone https://github.com/phluid61/mk-hpack.git
+</span><span style="color:#96b5b4;">cd</span><span style="color:#c0c5ce;"> mk-hpack
+</span><span style="color:#8fa1b3;">make          </span><span style="color:#65737e;"># builds shared and static libraries into lib/
+</span><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> check    </span><span style="color:#65737e;"># builds and runs the test suite
+</span></code></pre>
+<h2><a href="#project-structure" aria-hidden="true" class="anchor" id="project-structure"></a>Project Structure</h2>
+<pre lang="text" style="background-color:#2b303b;"><code><span style="color:#c0c5ce;">src/                Source and headers (the library itself)
+</span><span style="color:#c0c5ce;">  mkhpack.h           Public API header
+</span><span style="color:#c0c5ce;">  mkhpack_errors.h    Error code definitions
+</span><span style="color:#c0c5ce;">  mkhpack.c           Single-file implementation
+</span><span style="color:#c0c5ce;">  huffman_codes.inc   Generated Huffman tables (do not edit by hand)
+</span><span style="color:#c0c5ce;">lib/                Build output (header, shared objects, static library, pkg-config)
+</span><span style="color:#c0c5ce;">obj/                Intermediate object files
+</span><span style="color:#c0c5ce;">test/               Test executables and sources
+</span><span style="color:#c0c5ce;">  common.{c,h}       Shared test helpers (dump, test, test_err)
+</span><span style="color:#c0c5ce;">  test-huffman.c      Huffman encode/decode tests
+</span><span style="color:#c0c5ce;">  test-mkhpack.c      Integer encode/decode and string encode tests
+</span><span style="color:#c0c5ce;">bench/              Benchmark executables and sources
+</span><span style="color:#c0c5ce;">  benchmark.h         Benchmark harness interface
+</span><span style="color:#c0c5ce;">  benchmark-custom.c  RDTSC-based timing implementation (default)
+</span><span style="color:#c0c5ce;">  benchmark-gettime.c clock_gettime-based alternative
+</span><span style="color:#c0c5ce;">  bench-huffman.c     Huffman encode/decode benchmarks
+</span><span style="color:#c0c5ce;">  bench-mkhpack.c     Placeholder for integer benchmarks
+</span><span style="color:#c0c5ce;">debian/             Debian packaging files
+</span><span style="color:#c0c5ce;">huffman_codes.rb    Ruby script that generates src/huffman_codes.inc
+</span><span style="color:#c0c5ce;">str.h               Lightweight byte-string struct used in tests and benchmarks
+</span><span style="color:#c0c5ce;">mkhpack.pc.in       pkg-config template
+</span><span style="color:#c0c5ce;">mkhpack.spec        RPM spec file
+</span></code></pre>
+<h2><a href="#development-workflow" aria-hidden="true" class="anchor" id="development-workflow"></a>Development Workflow</h2>
+<h3><a href="#branching-model" aria-hidden="true" class="anchor" id="branching-model"></a>Branching model</h3>
+<p>This repository follows git-flow:</p>
+<ul>
+<li><code>development</code> — default branch; feature branches merge here</li>
+<li><code>main</code> — release branch; receives merges from <code>development</code></li>
+<li><code>feature/*</code> — short-lived branches off <code>development</code></li>
+</ul>
+<h3><a href="#build-targets" aria-hidden="true" class="anchor" id="build-targets"></a>Build targets</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make</code></td>
+<td>Build shared and static libraries into <code>lib/</code></td>
+</tr>
+<tr>
+<td><code>make check</code></td>
+<td>Build the library and run all tests</td>
+</tr>
+<tr>
+<td><code>make bench</code></td>
+<td>Build the library and run benchmarks</td>
+</tr>
+<tr>
+<td><code>make dist</code></td>
+<td>Create a source distribution tarball</td>
+</tr>
+<tr>
+<td><code>make bdist</code></td>
+<td>Create a binary distribution tarball</td>
+</tr>
+<tr>
+<td><code>make install</code></td>
+<td>Install to <code>PREFIX</code> (default <code>/usr/local</code>)</td>
+</tr>
+<tr>
+<td><code>make clean</code></td>
+<td>Remove build artefacts</td>
+</tr>
+<tr>
+<td><code>make distclean</code></td>
+<td>Remove distribution tarballs</td>
+</tr>
+</tbody>
+</table>
+<h3><a href="#code-generation" aria-hidden="true" class="anchor" id="code-generation"></a>Code generation</h3>
+<p><code>huffman_codes.rb</code> generates <code>src/huffman_codes.inc</code> from the Huffman table
+embedded as a <code>__END__</code> data section in the script. The Makefile rebuilds the
+<code>.inc</code> file automatically when the Ruby script changes. Do not edit
+<code>huffman_codes.inc</code> by hand.</p>
+<h2><a href="#coding-conventions" aria-hidden="true" class="anchor" id="coding-conventions"></a>Coding Conventions</h2>
+<ul>
+<li>Single-file implementation: all library code lives in <code>src/mkhpack.c</code></li>
+<li>Public API declared in <code>src/mkhpack.h</code>; error codes in <code>src/mkhpack_errors.h</code></li>
+<li>Object files are compiled with <code>-fPIC</code> for shared library compatibility</li>
+<li>All public functions return an <code>int</code> error code (0 = success)</li>
+<li>Optional output parameters accept <code>NULL</code> (the function uses a local variable internally)</li>
+<li>The integer type <code>MKHPACK_INT_T</code> is defined as <code>uint64_t</code></li>
+</ul>
+<h2><a href="#testing" aria-hidden="true" class="anchor" id="testing"></a>Testing</h2>
+<h3><a href="#framework" aria-hidden="true" class="anchor" id="framework"></a>Framework</h3>
+<p>Tests use a custom harness defined in <code>test/common.{c,h}</code>. There is no external
+test framework dependency.</p>
+<h3><a href="#running-tests" aria-hidden="true" class="anchor" id="running-tests"></a>Running tests</h3>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> check
+</span></code></pre>
+<p>Each test executable returns its failure count as the exit code. <code>make check</code>
+runs all test executables and prints the failure count for each.</p>
+<h3><a href="#test-structure" aria-hidden="true" class="anchor" id="test-structure"></a>Test structure</h3>
+<ul>
+<li><code>test/test-huffman.c</code> — tests Huffman encoding and decoding with known input/output
+pairs, plus error cases (truncated input, EOS symbol)</li>
+<li><code>test/test-mkhpack.c</code> — tests integer encoding/decoding with various prefix widths,
+raw string encoding, and Huffman-flagged string encoding</li>
+</ul>
+<h3><a href="#adding-new-tests" aria-hidden="true" class="anchor" id="adding-new-tests"></a>Adding new tests</h3>
+<p>Follow the pattern in the existing test files:</p>
+<ol>
+<li>Define input/output pairs as <code>str</code> arrays (using <code>STR_C()</code> from <code>str.h</code>)</li>
+<li>Call <code>test()</code> for expected-success cases or <code>test_err()</code> for expected-error cases</li>
+<li>Sum the return values and return the total from <code>main()</code></li>
+<li>Add the test name to <code>TEST_NAMES</code> in <code>Makefile</code></li>
+</ol>
+<h2><a href="#benchmarks" aria-hidden="true" class="anchor" id="benchmarks"></a>Benchmarks</h2>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> bench
+</span></code></pre>
+<p>The default benchmark harness (<code>benchmark-custom.c</code>) uses the RDTSC instruction
+to measure CPU cycles. An alternative <code>clock_gettime</code>-based harness is available
+in <code>benchmark-gettime.c</code>; switch by editing the <code>BENCHLIB</code> variable in <code>Makefile</code>.</p>

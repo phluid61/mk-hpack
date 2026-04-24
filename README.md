@@ -1,16 +1,45 @@
-HPACK - HTTP/2 Compression
+HPACK — HTTP/2 Compression
 ==========================
 
-This is a basic implementation of HPACK: Header Compression for HTTP/2 as specified
-in [RFC 7541](https://www.rfc-editor.org/rfc/rfc7541.html)
+A C implementation of HPACK: Header Compression for HTTP/2 as specified
+in [RFC 7541](https://www.rfc-editor.org/rfc/rfc7541.html).
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg)](code_of_conduct.md)
 
-## To build
+## Key Features
 
-    make dist
+- HPACK integer encoding and decoding (RFC 7541 §5.1)
+- Huffman string encoding, decoding, and length calculation (RFC 7541 §5.2)
+- HPACK string literal encoding and decoding with automatic Huffman optimisation
+- Shared library (`.so`), static library (`.a`), and pkg-config support
+- No runtime dependencies beyond the C standard library
 
-## To use
+## Technology Stack
+
+| Component | Detail |
+|-----------|--------|
+| Language | C (compiled with GCC) |
+| Build system | GNU Make |
+| Code generation | Ruby (Huffman tables) |
+| Packaging | Debian (`.deb`), RPM (`.spec`), tarballs |
+| CI/CD | GitHub Actions |
+| Licence | ISC |
+
+## Quick Start
+
+```sh
+make            # build shared and static libraries into lib/
+make check      # build and run tests
+make install    # install to /usr/local (or set PREFIX)
+```
+
+Link against the library using pkg-config:
+
+```sh
+gcc -o myapp myapp.c $(pkg-config --cflags --libs mkhpack)
+```
+
+## Usage Examples
 
 These examples use static linking:
 
@@ -22,12 +51,12 @@ These examples use static linking:
 #include "lib/mkhpack.h"
 
 MKHPACK_INT_T i = 987; /* number to encode */
-size_t  nbits = 6;   /* number of bits to occupy in the first byte */
-uint8_t pbits = 0x40; /* initial value of the first byte */
+size_t  nbits = 6;     /* number of bits to occupy in the first byte */
+uint8_t pbits = 0x40;  /* initial value of the first byte */
 
 #define BUFFER_SIZE 4321
 uint8_t buffer[BUFFER_SIZE];
-size_t  written;      /* will hold the number of bytes written */
+size_t  written;       /* will hold the number of bytes written */
 
 int error = mkhpack_encode_int(i, nbits, pbits, buffer, BUFFER_SIZE, &written);
 if (error) {
@@ -44,11 +73,11 @@ if (error) {
 
 #define CODE_LENGTH 10
 uint8_t code[CODE_LENGTH] = "\xFF\xF2\x81\xC0\x80\x01XYZ";
-size_t  consumed;     /* will hold the number of bytes read */
-size_t  nbits = 6;    /* number of bits to occupy in the first byte */
+size_t  consumed;      /* will hold the number of bytes read */
+size_t  nbits = 6;     /* number of bits to occupy in the first byte */
 
-MKHPACK_INT_T i;        /* decoded integer */
-uint8_t pbits;        /* will hold remainder of the first byte */
+MKHPACK_INT_T i;       /* decoded integer */
+uint8_t pbits;         /* will hold remainder of the first byte */
 
 int error = mkhpack_decode_int(code, CODE_LENGTH, &consumed, nbits, &i, &pbits);
 if (error) {
@@ -101,6 +130,26 @@ if (error) {
     printf("Decoded %zu-byte string from %zu bytes\n", written, consumed);
 }
 ```
+
+## Project Links
+
+| Resource | URL |
+|----------|-----|
+| Repository | [github.com/phluid61/mk-hpack](https://github.com/phluid61/mk-hpack) |
+| Issue Tracker | [GitHub Issues](https://github.com/phluid61/mk-hpack/issues) |
+| GitHub Pages | [phluid61.github.io/mk-hpack](https://phluid61.github.io/mk-hpack/) |
+| Documentation | [docs/](docs/) |
+
+## Documentation Guide
+
+| Audience | Start Here |
+|----------|------------|
+| New developers | [Developer Guide](docs/DEVELOPER_GUIDE.md) |
+| Architecture overview | [Architecture](docs/ARCHITECTURE.md) |
+| API reference | [API](docs/API.md) |
+| Build & release | [Deployment](docs/DEPLOYMENT.md) |
+| Configuration | [Configuration](docs/CONFIGURATION.md) |
+| All documents | [Documentation Index](docs/README.md) |
 
 ## Contributor Code of Conduct
 

@@ -1,0 +1,120 @@
+---
+layout: default
+title: "Configuration"
+---
+<h1><a href="#configuration" aria-hidden="true" class="anchor" id="configuration"></a>Configuration</h1>
+<p>mkhpack has no runtime configuration. All configuration is at build time, via
+Makefile variables.</p>
+<h2><a href="#build-time-configuration" aria-hidden="true" class="anchor" id="build-time-configuration"></a>Build-Time Configuration</h2>
+<h3><a href="#compiler-and-tool-paths-makefileinc" aria-hidden="true" class="anchor" id="compiler-and-tool-paths-makefileinc"></a>Compiler and tool paths (<code>Makefile.inc</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CC</code></td>
+<td><code>/usr/bin/gcc</code></td>
+<td>C compiler</td>
+</tr>
+<tr>
+<td><code>AR</code></td>
+<td><code>/usr/bin/ar</code></td>
+<td>Archive tool for static libraries</td>
+</tr>
+<tr>
+<td><code>CP</code></td>
+<td><code>/bin/cp</code></td>
+<td>File copy command</td>
+</tr>
+<tr>
+<td><code>CFLAGS</code></td>
+<td><code>-Wall</code></td>
+<td>Compiler warning flags</td>
+</tr>
+<tr>
+<td><code>OBJ_CFLAGS</code></td>
+<td><code>-fPIC -Wl,--relocatable</code></td>
+<td>Position-independent code flags for shared library objects</td>
+</tr>
+</tbody>
+</table>
+<p>To override, edit <code>Makefile.inc</code> or pass values on the command line:</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> CC=/usr/bin/clang CFLAGS=&quot;</span><span style="color:#a3be8c;">-Wall -O2</span><span style="color:#c0c5ce;">&quot;
+</span></code></pre>
+<h3><a href="#version-and-install-paths-makefile" aria-hidden="true" class="anchor" id="version-and-install-paths-makefile"></a>Version and install paths (<code>Makefile</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VERSION</code></td>
+<td><code>2.0.0</code></td>
+<td>Library version; determines SONAME and tarball names</td>
+</tr>
+<tr>
+<td><code>PREFIX</code></td>
+<td><code>/usr/local</code></td>
+<td>Installation prefix (overridable via environment or command line)</td>
+</tr>
+<tr>
+<td><code>DESTDIR</code></td>
+<td><em>(empty)</em></td>
+<td>Staging directory for packaging (prepended to all install paths)</td>
+</tr>
+</tbody>
+</table>
+<h3><a href="#benchmark-harness-makefile" aria-hidden="true" class="anchor" id="benchmark-harness-makefile"></a>Benchmark harness (<code>Makefile</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BENCHLIB</code></td>
+<td><code>benchmark-custom</code></td>
+<td><code>benchmark-gettime</code></td>
+</tr>
+<tr>
+<td><code>BENCHFLAGS</code></td>
+<td><code>-Wl,--no-as-needed</code></td>
+<td><code>-Wl,--no-as-needed -Wl,-lrt</code></td>
+</tr>
+</tbody>
+</table>
+<p>The default harness (<code>benchmark-custom</code>) uses the x86 RDTSC instruction for
+cycle-accurate timing. The alternative (<code>benchmark-gettime</code>) uses POSIX
+<code>clock_gettime</code> and may be more portable.</p>
+<h2><a href="#pkg-config" aria-hidden="true" class="anchor" id="pkg-config"></a>pkg-config</h2>
+<p>After installation, consumers can discover compiler and linker flags via
+pkg-config. The template is <code>mkhpack.pc.in</code>; the build substitutes <code>@PREFIX@</code>
+and <code>@VERSION@</code> to produce <code>lib/mkhpack.pc</code>.</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">pkg-config</span><span style="color:#bf616a;"> --cflags</span><span style="color:#c0c5ce;"> mkhpack    </span><span style="color:#65737e;"># → -I/usr/local/include
+</span><span style="color:#8fa1b3;">pkg-config</span><span style="color:#bf616a;"> --libs</span><span style="color:#c0c5ce;"> mkhpack      </span><span style="color:#65737e;"># → -L/usr/local/lib -lmkhpack
+</span></code></pre>
+<h2><a href="#installed-file-layout" aria-hidden="true" class="anchor" id="installed-file-layout"></a>Installed File Layout</h2>
+<p>After <code>make install PREFIX=/usr/local</code>:</p>
+<pre lang="text" style="background-color:#2b303b;"><code><span style="color:#c0c5ce;">/usr/local/
+</span><span style="color:#c0c5ce;">  include/
+</span><span style="color:#c0c5ce;">    mkhpack.h
+</span><span style="color:#c0c5ce;">  lib/
+</span><span style="color:#c0c5ce;">    libmkhpack.so.2.0.0      Versioned shared library
+</span><span style="color:#c0c5ce;">    libmkhpack.so.2           SONAME symlink
+</span><span style="color:#c0c5ce;">    libmkhpack.so             Development symlink
+</span><span style="color:#c0c5ce;">    libmkhpack.a              Static library
+</span><span style="color:#c0c5ce;">    pkgconfig/
+</span><span style="color:#c0c5ce;">      mkhpack.pc              pkg-config metadata
+</span></code></pre>

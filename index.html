@@ -1,75 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>mk-hpack</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href="/bootstrap.min.css" rel="stylesheet">
-		<link href="/site.css" rel="stylesheet">
-	</head>
-	<body>
-		<nav class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation">
-			<div class="navbar-header">
-				<a class="navbar-brand" href="/">phluid61</a>
-			</div>
-			<div class="collapse navbar-collapse">
-				<ul class="nav navbar-nav">
-					<li>
-						<a href="https://github.com/phluid61/">Repositories</a>
-					</li>
-					<li class="dropdown">
-						<a href="/internet-drafts/" class="dropdown-toggle" data-toggle="dropdown">Internet Drafts<b class="caret"></b></a>
-						<ul class="dropdown-menu">
-							<li><a href="/internet-drafts/">Internet Drafts Index</a></li>
-							<li class="divider"></li>
-							<li><a href="/internet-drafts/file-scheme/">file URI Scheme</a></li>
-							<li><a href="/internet-drafts/http2-encoded-data/">HTTP/2 Encoded Data</a></li>
-							<li><a href="/internet-drafts/http2-nak-frame/">HTTP/2 "Dropped Frame" Frame</a></li>
-							<li><a href="/internet-drafts/http2-segments/"><s>HTTP/2 Segments</s></a></li>
-						</ul>
-					</li>
-					<li class="dropdown">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Web Stuff<b class="caret"></b></a>
-						<ul class="dropdown-menu">
-							<li><a href="/ruby-h2/">ruby-h2</a></li>
-							<li><a href="/mk-hpack/">mk-hpack</a></li>
-							<li><a href="/http2-experimental/">HTTP/2 Experiments</a></li>
-						</ul>
-					</li>
-					<li class="dropdown">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Ruby Gems<b class="caret"></b></a>
-						<ul class="dropdown-menu">
-							<li><a href="/mug/">Matty's Ultimate Gem</a></li>
-							<li><a href="/symbol_lookup-gem/">Symbol[]</a></li>
-							<li><a href="/timestamp-gem/">Time.timestamp</a></li>
-							<li><a href="/hashmap-gem/">hashmap</a></li>
-							<li><a href="/memory-profiler-gem/">MemoryProfiler</a></li>
-							<li><a href="/threadpuddle-gem/">ThreadPuddle</a></li>
-							<li><a href="/try_convert/">try_convert</a></li>
-							<li><a href="/to_h-gem/">to_h</a></li>
-							<li><a href="/tauday-gem/">tauday</a></li>
-						</ul>
-					</li>
-				</ul>
-				<ul class="nav navbar-nav navbar-right">
-					<li>
-						<a href="https://twitter.com/phluid61"><img src="/twitter.png" width="28" height="28"></a>
-					</li>
-					<li>
-						<a href="https://plus.google.com/+MatthewKerwin"><img src="/google+.png" width="28" height="28"></a>
-					</li>
-				</ul>
-			</div>
-			</nav>
-			<div class="container">
-<h1><a href="#hpack---http2-compression" aria-hidden="true" class="anchor" id="hpack---http2-compression"></a>HPACK - HTTP/2 Compression</h1>
-<p>This is a basic implementation of HPACK: Header Compression for HTTP/2 as specified
-in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
-<p><a href="code_of_conduct.md"><img src="https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg" alt="Contributor Covenant" /></a></p>
-<h2><a href="#to-build" aria-hidden="true" class="anchor" id="to-build"></a>To build</h2>
-<pre style="background-color:#2b303b;"><code><span style="color:#c0c5ce;">make dist
+---
+layout: default
+title: "HPACK — HTTP/2 Compression"
+---
+<h1><a href="#hpack--http2-compression" aria-hidden="true" class="anchor" id="hpack--http2-compression"></a>HPACK — HTTP/2 Compression</h1>
+<p>A C implementation of HPACK: Header Compression for HTTP/2 as specified
+in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a>.</p>
+<p><a href="code_of_conduct.html"><img src="https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg" alt="Contributor Covenant" /></a></p>
+<h2><a href="#key-features" aria-hidden="true" class="anchor" id="key-features"></a>Key Features</h2>
+<ul>
+<li>HPACK integer encoding and decoding (RFC 7541 §5.1)</li>
+<li>Huffman string encoding, decoding, and length calculation (RFC 7541 §5.2)</li>
+<li>HPACK string literal encoding and decoding with automatic Huffman optimisation</li>
+<li>Shared library (<code>.so</code>), static library (<code>.a</code>), and pkg-config support</li>
+<li>No runtime dependencies beyond the C standard library</li>
+</ul>
+<h2><a href="#technology-stack" aria-hidden="true" class="anchor" id="technology-stack"></a>Technology Stack</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Language</td>
+<td>C (compiled with GCC)</td>
+</tr>
+<tr>
+<td>Build system</td>
+<td>GNU Make</td>
+</tr>
+<tr>
+<td>Code generation</td>
+<td>Ruby (Huffman tables)</td>
+</tr>
+<tr>
+<td>Packaging</td>
+<td>Debian (<code>.deb</code>), RPM (<code>.spec</code>), tarballs</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>GitHub Actions</td>
+</tr>
+<tr>
+<td>Licence</td>
+<td>ISC</td>
+</tr>
+</tbody>
+</table>
+<h2><a href="#quick-start" aria-hidden="true" class="anchor" id="quick-start"></a>Quick Start</h2>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">make            </span><span style="color:#65737e;"># build shared and static libraries into lib/
+</span><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> check      </span><span style="color:#65737e;"># build and run tests
+</span><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> install    </span><span style="color:#65737e;"># install to /usr/local (or set PREFIX)
 </span></code></pre>
-<h2><a href="#to-use" aria-hidden="true" class="anchor" id="to-use"></a>To use</h2>
+<p>Link against the library using pkg-config:</p>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">gcc</span><span style="color:#bf616a;"> -o</span><span style="color:#c0c5ce;"> myapp myapp.c $(</span><span style="color:#8fa1b3;">pkg-config</span><span style="color:#bf616a;"> --cflags --libs</span><span style="color:#c0c5ce;"> mkhpack)
+</span></code></pre>
+<h2><a href="#usage-examples" aria-hidden="true" class="anchor" id="usage-examples"></a>Usage Examples</h2>
 <p>These examples use static linking:</p>
 <h3><a href="#hpack-integer-encoding" aria-hidden="true" class="anchor" id="hpack-integer-encoding"></a>HPACK integer encoding</h3>
 <pre lang="c" style="background-color:#2b303b;"><code><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdio.h</span><span style="color:#c0c5ce;">&gt;
@@ -77,12 +65,12 @@ in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 </span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">lib/mkhpack.h</span><span style="color:#c0c5ce;">&quot;
 </span><span style="color:#c0c5ce;">
 </span><span style="color:#c0c5ce;">MKHPACK_INT_T i = </span><span style="color:#d08770;">987</span><span style="color:#c0c5ce;">; </span><span style="color:#65737e;">/* number to encode */
-</span><span style="color:#c0c5ce;">size_t  nbits = </span><span style="color:#d08770;">6</span><span style="color:#c0c5ce;">;   </span><span style="color:#65737e;">/* number of bits to occupy in the first byte */
-</span><span style="color:#c0c5ce;">uint8_t pbits = </span><span style="color:#d08770;">0x40</span><span style="color:#c0c5ce;">; </span><span style="color:#65737e;">/* initial value of the first byte */
+</span><span style="color:#c0c5ce;">size_t  nbits = </span><span style="color:#d08770;">6</span><span style="color:#c0c5ce;">;     </span><span style="color:#65737e;">/* number of bits to occupy in the first byte */
+</span><span style="color:#c0c5ce;">uint8_t pbits = </span><span style="color:#d08770;">0x40</span><span style="color:#c0c5ce;">;  </span><span style="color:#65737e;">/* initial value of the first byte */
 </span><span style="color:#c0c5ce;">
 </span><span style="color:#b48ead;">#define </span><span style="color:#c0c5ce;">BUFFER_SIZE </span><span style="color:#d08770;">4321
 </span><span style="color:#c0c5ce;">uint8_t buffer[BUFFER_SIZE];
-</span><span style="color:#c0c5ce;">size_t  written;      </span><span style="color:#65737e;">/* will hold the number of bytes written */
+</span><span style="color:#c0c5ce;">size_t  written;       </span><span style="color:#65737e;">/* will hold the number of bytes written */
 </span><span style="color:#c0c5ce;">
 </span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;"> error = </span><span style="color:#8fa1b3;">mkhpack_encode_int</span><span style="color:#c0c5ce;">(i, nbits, pbits, buffer, BUFFER_SIZE, &amp;written);
 </span><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">(error) {
@@ -97,11 +85,11 @@ in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 </span><span style="color:#c0c5ce;">
 </span><span style="color:#b48ead;">#define </span><span style="color:#c0c5ce;">CODE_LENGTH </span><span style="color:#d08770;">10
 </span><span style="color:#c0c5ce;">uint8_t code[CODE_LENGTH] = &quot;</span><span style="color:#96b5b4;">\xFF\xF2\x81\xC0\x80\x01</span><span style="color:#a3be8c;">XYZ</span><span style="color:#c0c5ce;">&quot;;
-</span><span style="color:#c0c5ce;">size_t  consumed;     </span><span style="color:#65737e;">/* will hold the number of bytes read */
-</span><span style="color:#c0c5ce;">size_t  nbits = </span><span style="color:#d08770;">6</span><span style="color:#c0c5ce;">;    </span><span style="color:#65737e;">/* number of bits to occupy in the first byte */
+</span><span style="color:#c0c5ce;">size_t  consumed;      </span><span style="color:#65737e;">/* will hold the number of bytes read */
+</span><span style="color:#c0c5ce;">size_t  nbits = </span><span style="color:#d08770;">6</span><span style="color:#c0c5ce;">;     </span><span style="color:#65737e;">/* number of bits to occupy in the first byte */
 </span><span style="color:#c0c5ce;">
-</span><span style="color:#c0c5ce;">MKHPACK_INT_T i;        </span><span style="color:#65737e;">/* decoded integer */
-</span><span style="color:#c0c5ce;">uint8_t pbits;        </span><span style="color:#65737e;">/* will hold remainder of the first byte */
+</span><span style="color:#c0c5ce;">MKHPACK_INT_T i;       </span><span style="color:#65737e;">/* decoded integer */
+</span><span style="color:#c0c5ce;">uint8_t pbits;         </span><span style="color:#65737e;">/* will hold remainder of the first byte */
 </span><span style="color:#c0c5ce;">
 </span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;"> error = </span><span style="color:#8fa1b3;">mkhpack_decode_int</span><span style="color:#c0c5ce;">(code, CODE_LENGTH, &amp;consumed, nbits, &amp;i, &amp;pbits);
 </span><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">(error) {
@@ -149,8 +137,70 @@ in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 </span><span style="color:#c0c5ce;">    </span><span style="color:#96b5b4;">printf</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">Decoded </span><span style="color:#d08770;">%zu</span><span style="color:#a3be8c;">-byte string from </span><span style="color:#d08770;">%zu</span><span style="color:#a3be8c;"> bytes</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;, written, consumed);
 </span><span style="color:#c0c5ce;">}
 </span></code></pre>
+<h2><a href="#project-links" aria-hidden="true" class="anchor" id="project-links"></a>Project Links</h2>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Repository</td>
+<td><a href="https://github.com/phluid61/mk-hpack">github.com/phluid61/mk-hpack</a></td>
+</tr>
+<tr>
+<td>Issue Tracker</td>
+<td><a href="https://github.com/phluid61/mk-hpack/issues">GitHub Issues</a></td>
+</tr>
+<tr>
+<td>GitHub Pages</td>
+<td><a href="https://phluid61.github.io/mk-hpack/">phluid61.github.io/mk-hpack</a></td>
+</tr>
+<tr>
+<td>Documentation</td>
+<td><a href="docs/">docs/</a></td>
+</tr>
+</tbody>
+</table>
+<h2><a href="#documentation-guide" aria-hidden="true" class="anchor" id="documentation-guide"></a>Documentation Guide</h2>
+<table>
+<thead>
+<tr>
+<th>Audience</th>
+<th>Start Here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>New developers</td>
+<td><a href="docs/DEVELOPER_GUIDE.html">Developer Guide</a></td>
+</tr>
+<tr>
+<td>Architecture overview</td>
+<td><a href="docs/ARCHITECTURE.html">Architecture</a></td>
+</tr>
+<tr>
+<td>API reference</td>
+<td><a href="docs/API.html">API</a></td>
+</tr>
+<tr>
+<td>Build &amp; release</td>
+<td><a href="docs/DEPLOYMENT.html">Deployment</a></td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td><a href="docs/CONFIGURATION.html">Configuration</a></td>
+</tr>
+<tr>
+<td>All documents</td>
+<td><a href="docs/index.html">Documentation Index</a></td>
+</tr>
+</tbody>
+</table>
 <h2><a href="#contributor-code-of-conduct" aria-hidden="true" class="anchor" id="contributor-code-of-conduct"></a>Contributor Code of Conduct</h2>
-<p>This repository is subject to a <a href="code_of_conduct.md">Contributor Code of Conduct</a>
+<p>This repository is subject to a <a href="code_of_conduct.html">Contributor Code of Conduct</a>
 adapted from the <a href="https://www.contributor-covenant.org">Contributor Covenant</a>, version 3.0, available at
 <a href="https://www.contributor-covenant.org/version/3/0/">https://www.contributor-covenant.org/version/3/0/</a></p>
 <h2><a href="#licence" aria-hidden="true" class="anchor" id="licence"></a>Licence</h2>
@@ -169,119 +219,4 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-</pre><h1><a href="#contributor-covenant-30-code-of-conduct" aria-hidden="true" class="anchor" id="contributor-covenant-30-code-of-conduct"></a>Contributor Covenant 3.0 Code of Conduct</h1>
-<h2><a href="#our-pledge" aria-hidden="true" class="anchor" id="our-pledge"></a>Our Pledge</h2>
-<p>We pledge to make our community welcoming, safe, and equitable for all.</p>
-<p>We are committed to fostering an environment that respects and promotes the dignity, rights, and
-contributions of all individuals, regardless of characteristics including race, ethnicity, caste,
-color, age, physical characteristics, neurodiversity, disability, sex or gender, gender identity or
-expression, sexual orientation, language, philosophy or religion, national or social origin,
-socio-economic position, level of education, or other status. The same privileges of participation
-are extended to everyone who participates in good faith and in accordance with this Covenant.</p>
-<h2><a href="#encouraged-behaviors" aria-hidden="true" class="anchor" id="encouraged-behaviors"></a>Encouraged Behaviors</h2>
-<p>While acknowledging differences in social norms, we all strive to meet our community's expectations
-for positive behavior. We also understand that our words and actions may be interpreted differently
-than we intend based on culture, background, or native language.</p>
-<p>With these considerations in mind, we agree to behave mindfully toward each other and act in ways
-that center our shared values, including:</p>
-<ol>
-<li>Respecting the <strong>purpose of our community</strong>, our activities, and our ways of gathering.</li>
-<li>Engaging <strong>kindly and honestly</strong> with others.</li>
-<li>Respecting <strong>different viewpoints</strong> and experiences.</li>
-<li><strong>Taking responsibility</strong> for our actions and contributions.</li>
-<li>Gracefully giving and accepting <strong>constructive feedback</strong>.</li>
-<li>Committing to <strong>repairing harm</strong> when it occurs.</li>
-<li>Behaving in other ways that promote and sustain the <strong>well-being of our community</strong>.</li>
-</ol>
-<h2><a href="#restricted-behaviors" aria-hidden="true" class="anchor" id="restricted-behaviors"></a>Restricted Behaviors</h2>
-<p>We agree to restrict the following behaviors in our community. Instances, threats, and promotion of
-these behaviors are violations of this Code of Conduct.</p>
-<ol>
-<li><strong>Harassment.</strong> Violating explicitly expressed boundaries or engaging in unnecessary personal attention after any clear request to stop.</li>
-<li><strong>Character attacks.</strong> Making insulting, demeaning, or pejorative comments directed at a community member or group of people.</li>
-<li><strong>Stereotyping or discrimination.</strong> Characterizing anyone’s personality or behavior on the basis of immutable identities or traits.</li>
-<li><strong>Sexualization.</strong> Behaving in a way that would generally be considered inappropriately intimate in the context or purpose of the community.</li>
-<li><strong>Violating confidentiality</strong>. Sharing or acting on someone's personal or private information without their permission.</li>
-<li><strong>Endangerment.</strong> Causing, encouraging, or threatening violence or other harm toward any person or group.</li>
-<li>Behaving in other ways that <strong>threaten the well-being</strong> of our community.</li>
-</ol>
-<h3><a href="#other-restrictions" aria-hidden="true" class="anchor" id="other-restrictions"></a>Other Restrictions</h3>
-<ol>
-<li><strong>Misleading identity.</strong> Impersonating someone else for any reason, or pretending to be someone else to evade enforcement actions.</li>
-<li><strong>Failing to credit sources.</strong> Not properly crediting the sources of content you contribute.</li>
-<li><strong>Promotional materials</strong>. Sharing marketing or other commercial content in a way that is outside the norms of the community.</li>
-<li><strong>Irresponsible communication.</strong> Failing to responsibly present content which includes, links or describes any other restricted behaviors.</li>
-</ol>
-<h2><a href="#reporting-an-issue" aria-hidden="true" class="anchor" id="reporting-an-issue"></a>Reporting an Issue</h2>
-<p>Tensions can occur between community members even when they are trying their best to collaborate.
-Not every conflict represents a code of conduct violation, and this Code of Conduct reinforces
-encouraged behaviors and norms that can help avoid conflicts and minimize harm.</p>
-<p>When an incident does occur, it is important to report it promptly. To report a possible violation
-send an email to <a href="mailto:matthew@kerwin.net.au">matthew@kerwin.net.au</a></p>
-<p>Community Moderators take reports of violations seriously and will make every effort to respond in a
-timely manner. They will investigate all reports of code of conduct violations, reviewing messages,
-logs, and recordings, or interviewing witnesses and other participants. Community Moderators will
-keep investigation and enforcement actions as transparent as possible while prioritizing safety and
-confidentiality. In order to honor these values, enforcement actions are carried out in private with
-the involved parties, but communicating to the whole community may be part of a mutually agreed upon
-resolution.</p>
-<h2><a href="#addressing-and-repairing-harm" aria-hidden="true" class="anchor" id="addressing-and-repairing-harm"></a>Addressing and Repairing Harm</h2>
-<p>If an investigation by the Community Moderators finds that this Code of Conduct has been violated,
-the following enforcement ladder may be used to determine how best to repair harm, based on the
-incident's impact on the individuals involved and the community as a whole. Depending on the
-severity of a violation, lower rungs on the ladder may be skipped.</p>
-<ol>
-<li>Warning
-<ol>
-<li>Event: A violation involving a single incident or series of incidents.</li>
-<li>Consequence: A private, written warning from the Community Moderators.</li>
-<li>Repair: Examples of repair include a private written apology, acknowledgement of responsibility, and seeking clarification on expectations.</li>
-</ol>
-</li>
-<li>Temporarily Limited Activities
-<ol>
-<li>Event: A repeated incidence of a violation that previously resulted in a warning, or the first incidence of a more serious violation.</li>
-<li>Consequence: A private, written warning with a time-limited cooldown period designed to underscore the seriousness of the situation and give the community members involved time to process the incident. The cooldown period may be limited to particular communication channels or interactions with particular community members.</li>
-<li>Repair: Examples of repair may include making an apology, using the cooldown period to reflect on actions and impact, and being thoughtful about re-entering community spaces after the period is over.</li>
-</ol>
-</li>
-<li>Temporary Suspension
-<ol>
-<li>Event: A pattern of repeated violation which the Community Moderators have tried to address with warnings, or a single serious violation.</li>
-<li>Consequence: A private written warning with conditions for return from suspension. In general, temporary suspensions give the person being suspended time to reflect upon their behavior and possible corrective actions.</li>
-<li>Repair: Examples of repair include respecting the spirit of the suspension, meeting the specified conditions for return, and being thoughtful about how to reintegrate with the community when the suspension is lifted.</li>
-</ol>
-</li>
-<li>Permanent Ban
-<ol>
-<li>Event: A pattern of repeated code of conduct violations that other steps on the ladder have failed to resolve, or a violation so serious that the Community Moderators determine there is no way to keep the community safe with this person as a member.</li>
-<li>Consequence: Access to all community spaces, tools, and communication channels is removed. In general, permanent bans should be rarely used, should have strong reasoning behind them, and should only be resorted to if working through other remedies has failed to change the behavior.</li>
-<li>Repair: There is no possible repair in cases of this severity.</li>
-</ol>
-</li>
-</ol>
-<p>This enforcement ladder is intended as a guideline. It does not limit the ability of Community
-Managers to use their discretion and judgment, in keeping with the best interests of our community.</p>
-<h2><a href="#scope" aria-hidden="true" class="anchor" id="scope"></a>Scope</h2>
-<p>This Code of Conduct applies within all community spaces, and also applies when an individual is
-officially representing the community in public or other spaces. Examples of representing our
-community include using an official email address, posting via an official social media account, or
-acting as an appointed representative at an online or offline event.</p>
-<h2><a href="#attribution" aria-hidden="true" class="anchor" id="attribution"></a>Attribution</h2>
-<p>This Code of Conduct is adapted from the Contributor Covenant, version 3.0, permanently available at
-<a href="https://www.contributor-covenant.org/version/3/0/">https://www.contributor-covenant.org/version/3/0/</a>.</p>
-<p>Contributor Covenant is stewarded by the Organization for Ethical Source and licensed under CC BY-SA
-4.0. To view a copy of this license, visit
-<a href="https://creativecommons.org/licenses/by-sa/4.0/">https://creativecommons.org/licenses/by-sa/4.0/</a></p>
-<p>For answers to common questions about Contributor Covenant, see the FAQ at
-<a href="https://www.contributor-covenant.org/faq">https://www.contributor-covenant.org/faq</a>.
-Translations are provided at
-<a href="https://www.contributor-covenant.org/translations">https://www.contributor-covenant.org/translations</a>.
-Additional enforcement and community guideline resources can be found at
-<a href="https://www.contributor-covenant.org/resources">https://www.contributor-covenant.org/resources</a>.
-The enforcement ladder was inspired by the work of
-<a href="https://github.com/mozilla/inclusion">Mozilla’s code of conduct team</a>.</p>
-			<script src="/jquery.min.js"></script>
-			<script src="/bootstrap.min.js"></script>
-	</body>
-</html>
+</pre>

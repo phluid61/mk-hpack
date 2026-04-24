@@ -1,0 +1,458 @@
+---
+layout: default
+title: "API"
+---
+<h1><a href="#api" aria-hidden="true" class="anchor" id="api"></a>API</h1>
+<p>mkhpack is a C library consumed by including <code>mkhpack.h</code> and linking against
+<code>libmkhpack</code>. It does not expose HTTP endpoints, CLI commands, or RPC interfaces.</p>
+<p>All functions return an <code>int</code> error code. A return value of <code>0</code> (<code>ERROR_NONE</code>)
+indicates success. Error codes are defined in <code>src/mkhpack_errors.h</code>.</p>
+<h2><a href="#types" aria-hidden="true" class="anchor" id="types"></a>Types</h2>
+<h3><a href="#mkhpack_int_t" aria-hidden="true" class="anchor" id="mkhpack_int_t"></a><code>MKHPACK_INT_T</code></h3>
+<p>Defined as <code>uint64_t</code>. This is the integer type used for all HPACK integer
+encoding and decoding operations.</p>
+<h2><a href="#error-codes" aria-hidden="true" class="anchor" id="error-codes"></a>Error Codes</h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Constant</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>ERROR_NONE</code></td>
+<td>No error</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>ERROR_OVERFLOW</code></td>
+<td>Output buffer full (encoding) or integer too large to represent (decoding)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>ERROR_TRUNCATED</code></td>
+<td>Input buffer exhausted mid-value</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>ERROR_EOS</code></td>
+<td>Invalid Huffman code — the EOS symbol (256) was encountered</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>ERROR_BAD_PREFIX</code></td>
+<td><code>prefix_bits</code> out of range (must be 1–8), or <code>prefix</code> has bits set in the masked region</td>
+</tr>
+</tbody>
+</table>
+<h2><a href="#integer-functions" aria-hidden="true" class="anchor" id="integer-functions"></a>Integer Functions</h2>
+<h3><a href="#mkhpack_encode_int" aria-hidden="true" class="anchor" id="mkhpack_encode_int"></a><code>mkhpack_encode_int()</code></h3>
+<p>Encode an integer as a variable-length byte sequence per RFC 7541 §5.1.</p>
+<p><strong>Signature:</strong> <code>int mkhpack_encode_int(MKHPACK_INT_T i, size_t prefix_bits, uint8_t prefix, uint8_t *buff, size_t n, size_t *produced)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>i</code></td>
+<td><code>MKHPACK_INT_T</code></td>
+<td>Integer to encode</td>
+</tr>
+<tr>
+<td><code>prefix_bits</code></td>
+<td><code>size_t</code></td>
+<td>Bit-width of the prefix field (1 to 8 inclusive)</td>
+</tr>
+<tr>
+<td><code>prefix</code></td>
+<td><code>uint8_t</code></td>
+<td>First byte with high bits pre-loaded; low <code>prefix_bits</code> bits must be zero</td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Output buffer (may be <code>NULL</code> to calculate length only)</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>size_t</code></td>
+<td>Size of output buffer in bytes</td>
+</tr>
+<tr>
+<td><code>produced</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of bytes written (may be <code>NULL</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>ERROR_NONE</code>, <code>ERROR_OVERFLOW</code>, or <code>ERROR_BAD_PREFIX</code></p>
+<hr />
+<h3><a href="#mkhpack_decode_int" aria-hidden="true" class="anchor" id="mkhpack_decode_int"></a><code>mkhpack_decode_int()</code></h3>
+<p>Decode a variable-length integer from a byte sequence per RFC 7541 §5.1.</p>
+<p><strong>Signature:</strong> <code>int mkhpack_decode_int(uint8_t *buff, size_t bytesize, size_t *consumed, size_t prefix_bits, MKHPACK_INT_T *i, uint8_t *prefix)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>buff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Pointer to encoded bytes</td>
+</tr>
+<tr>
+<td><code>bytesize</code></td>
+<td><code>size_t</code></td>
+<td>Number of encoded bytes available</td>
+</tr>
+<tr>
+<td><code>consumed</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of bytes read (may be <code>NULL</code>)</td>
+</tr>
+<tr>
+<td><code>prefix_bits</code></td>
+<td><code>size_t</code></td>
+<td>Bit-width of the prefix field (1 to 8 inclusive)</td>
+</tr>
+<tr>
+<td><code>i</code></td>
+<td><code>MKHPACK_INT_T *</code></td>
+<td>Receives the decoded integer (may be <code>NULL</code>)</td>
+</tr>
+<tr>
+<td><code>prefix</code></td>
+<td><code>uint8_t *</code></td>
+<td>Receives the high bits of the first byte (may be <code>NULL</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>ERROR_NONE</code>, <code>ERROR_OVERFLOW</code>, <code>ERROR_TRUNCATED</code>, or <code>ERROR_BAD_PREFIX</code></p>
+<h2><a href="#huffman-functions" aria-hidden="true" class="anchor" id="huffman-functions"></a>Huffman Functions</h2>
+<h3><a href="#huffman_encode" aria-hidden="true" class="anchor" id="huffman_encode"></a><code>huffman_encode()</code></h3>
+<p>Huffman-encode a byte sequence using the HPACK Huffman table (RFC 7541 Appendix B).</p>
+<p><strong>Signature:</strong> <code>int huffman_encode(uint8_t *str, size_t bytesize, size_t *consumed, uint8_t *buff, size_t n, size_t *produced)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td><code>uint8_t *</code></td>
+<td>Input bytes to encode</td>
+</tr>
+<tr>
+<td><code>bytesize</code></td>
+<td><code>size_t</code></td>
+<td>Number of input bytes</td>
+</tr>
+<tr>
+<td><code>consumed</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of input bytes read (may be <code>NULL</code>)</td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Output buffer (may be <code>NULL</code> to calculate length only)</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>size_t</code></td>
+<td>Size of output buffer in bytes</td>
+</tr>
+<tr>
+<td><code>produced</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of bytes written (may be <code>NULL</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>ERROR_NONE</code> or <code>ERROR_OVERFLOW</code></p>
+<hr />
+<h3><a href="#huffman_decode" aria-hidden="true" class="anchor" id="huffman_decode"></a><code>huffman_decode()</code></h3>
+<p>Decode a Huffman-encoded byte sequence.</p>
+<p><strong>Signature:</strong> <code>int huffman_decode(uint8_t *huff, size_t bytesize, size_t *consumed, uint8_t *buff, size_t n, size_t *produced)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>huff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Huffman-encoded input bytes</td>
+</tr>
+<tr>
+<td><code>bytesize</code></td>
+<td><code>size_t</code></td>
+<td>Number of input bytes</td>
+</tr>
+<tr>
+<td><code>consumed</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of input bytes read (may be <code>NULL</code>)</td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Output buffer (may be <code>NULL</code> to calculate length only)</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>size_t</code></td>
+<td>Size of output buffer in bytes</td>
+</tr>
+<tr>
+<td><code>produced</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of bytes written (may be <code>NULL</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>ERROR_NONE</code>, <code>ERROR_OVERFLOW</code>, <code>ERROR_TRUNCATED</code>, or <code>ERROR_EOS</code></p>
+<hr />
+<h3><a href="#huffman_length" aria-hidden="true" class="anchor" id="huffman_length"></a><code>huffman_length()</code></h3>
+<p>Calculate the encoded length of a byte sequence without performing the encoding.</p>
+<p><strong>Signature:</strong> <code>size_t huffman_length(uint8_t *str, size_t bytesize)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td><code>uint8_t *</code></td>
+<td>Input bytes</td>
+</tr>
+<tr>
+<td><code>bytesize</code></td>
+<td><code>size_t</code></td>
+<td>Number of input bytes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> The number of bytes the Huffman encoding would produce.</p>
+<h2><a href="#string-functions" aria-hidden="true" class="anchor" id="string-functions"></a>String Functions</h2>
+<h3><a href="#mkhpack_encode_raw_str" aria-hidden="true" class="anchor" id="mkhpack_encode_raw_str"></a><code>mkhpack_encode_raw_str()</code></h3>
+<p>Encode a raw (non-Huffman) string literal per RFC 7541 §5.2. Prepends the
+string length as a 7-bit-prefixed integer with the Huffman flag cleared.</p>
+<p><strong>Signature:</strong> <code>int mkhpack_encode_raw_str(uint8_t *str, size_t bytesize, size_t *consumed, uint8_t *buff, size_t n, size_t *produced)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td><code>uint8_t *</code></td>
+<td>Input bytes</td>
+</tr>
+<tr>
+<td><code>bytesize</code></td>
+<td><code>size_t</code></td>
+<td>Number of input bytes</td>
+</tr>
+<tr>
+<td><code>consumed</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of input bytes read (may be <code>NULL</code>)</td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Output buffer</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>size_t</code></td>
+<td>Size of output buffer in bytes</td>
+</tr>
+<tr>
+<td><code>produced</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of bytes written (may be <code>NULL</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>ERROR_NONE</code> or <code>ERROR_OVERFLOW</code></p>
+<hr />
+<h3><a href="#mkhpack_encode_huff_str" aria-hidden="true" class="anchor" id="mkhpack_encode_huff_str"></a><code>mkhpack_encode_huff_str()</code></h3>
+<p>Encode a pre-Huffman-encoded string literal per RFC 7541 §5.2. Prepends the
+string length as a 7-bit-prefixed integer with the Huffman flag set. The caller
+is responsible for Huffman-encoding the payload beforehand.</p>
+<p><strong>Signature:</strong> <code>int mkhpack_encode_huff_str(uint8_t *str, size_t bytesize, size_t *consumed, uint8_t *buff, size_t n, size_t *produced)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td><code>uint8_t *</code></td>
+<td>Pre-encoded Huffman bytes</td>
+</tr>
+<tr>
+<td><code>bytesize</code></td>
+<td><code>size_t</code></td>
+<td>Number of input bytes</td>
+</tr>
+<tr>
+<td><code>consumed</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of input bytes read (may be <code>NULL</code>)</td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Output buffer</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>size_t</code></td>
+<td>Size of output buffer in bytes</td>
+</tr>
+<tr>
+<td><code>produced</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of bytes written (may be <code>NULL</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>ERROR_NONE</code> or <code>ERROR_OVERFLOW</code></p>
+<hr />
+<h3><a href="#mkhpack_encode_str" aria-hidden="true" class="anchor" id="mkhpack_encode_str"></a><code>mkhpack_encode_str()</code></h3>
+<p>Encode a string literal, automatically choosing Huffman encoding if it results
+in a shorter output.</p>
+<p><strong>Signature:</strong> <code>int mkhpack_encode_str(uint8_t *str, size_t bytesize, size_t *consumed, uint8_t *buff, size_t n, size_t *produced)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td><code>uint8_t *</code></td>
+<td>Input bytes</td>
+</tr>
+<tr>
+<td><code>bytesize</code></td>
+<td><code>size_t</code></td>
+<td>Number of input bytes</td>
+</tr>
+<tr>
+<td><code>consumed</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of input bytes read (may be <code>NULL</code>)</td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Output buffer</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>size_t</code></td>
+<td>Size of output buffer in bytes</td>
+</tr>
+<tr>
+<td><code>produced</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of bytes written (may be <code>NULL</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>ERROR_NONE</code> or <code>ERROR_OVERFLOW</code></p>
+<hr />
+<h3><a href="#mkhpack_decode_str" aria-hidden="true" class="anchor" id="mkhpack_decode_str"></a><code>mkhpack_decode_str()</code></h3>
+<p>Decode an HPACK string literal. Automatically detects whether the string is
+Huffman-encoded (via the high bit of the first byte) and decodes accordingly.</p>
+<p><strong>Signature:</strong> <code>int mkhpack_decode_str(uint8_t *str, size_t bytesize, size_t *consumed, uint8_t *buff, size_t n, size_t *produced)</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td><code>uint8_t *</code></td>
+<td>Encoded string bytes (length prefix + payload)</td>
+</tr>
+<tr>
+<td><code>bytesize</code></td>
+<td><code>size_t</code></td>
+<td>Number of input bytes</td>
+</tr>
+<tr>
+<td><code>consumed</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of input bytes read (may be <code>NULL</code>)</td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td><code>uint8_t *</code></td>
+<td>Output buffer</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>size_t</code></td>
+<td>Size of output buffer in bytes</td>
+</tr>
+<tr>
+<td><code>produced</code></td>
+<td><code>size_t *</code></td>
+<td>Receives the number of bytes written (may be <code>NULL</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>ERROR_NONE</code>, <code>ERROR_OVERFLOW</code>, <code>ERROR_TRUNCATED</code>, or <code>ERROR_EOS</code></p>

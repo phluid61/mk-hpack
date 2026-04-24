@@ -1,0 +1,197 @@
+---
+layout: default
+title: "Deployment"
+---
+<h1><a href="#deployment" aria-hidden="true" class="anchor" id="deployment"></a>Deployment</h1>
+<h2><a href="#build-process" aria-hidden="true" class="anchor" id="build-process"></a>Build Process</h2>
+<h3><a href="#prerequisites" aria-hidden="true" class="anchor" id="prerequisites"></a>Prerequisites</h3>
+<ul>
+<li>GCC (or a compatible C compiler)</li>
+<li>GNU Make</li>
+<li>Ruby (for Huffman table generation)</li>
+</ul>
+<p>For Debian packaging additionally:</p>
+<ul>
+<li><code>debhelper</code> (compat level 13)</li>
+<li><code>dpkg-buildpackage</code></li>
+</ul>
+<h3><a href="#build-commands" aria-hidden="true" class="anchor" id="build-commands"></a>Build commands</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Artefacts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make</code></td>
+<td><code>lib/libmkhpack.so.2.0.0</code>, <code>lib/libmkhpack.a</code>, <code>lib/mkhpack.h</code>, <code>lib/mkhpack.pc</code></td>
+</tr>
+<tr>
+<td><code>make dist</code></td>
+<td><code>mkhpack-2.0.0-src.tar.gz</code> (source tarball)</td>
+</tr>
+<tr>
+<td><code>make bdist</code></td>
+<td><code>mkhpack-2.0.0.tar.gz</code> (binary tarball)</td>
+</tr>
+<tr>
+<td><code>dpkg-buildpackage -us -uc -b</code></td>
+<td><code>libmkhpack1_*.deb</code>, <code>libmkhpack-dev_*.deb</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a href="#installation" aria-hidden="true" class="anchor" id="installation"></a>Installation</h3>
+<pre lang="sh" style="background-color:#2b303b;"><code><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> install                        </span><span style="color:#65737e;"># installs to /usr/local
+</span><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> install PREFIX=/usr            </span><span style="color:#65737e;"># installs to /usr
+</span><span style="color:#8fa1b3;">make</span><span style="color:#c0c5ce;"> install DESTDIR=/tmp/staging   </span><span style="color:#65737e;"># staged install for packaging
+</span></code></pre>
+<p>See <a href="CONFIGURATION.html">CONFIGURATION.md</a> for a full description of install paths.</p>
+<h2><a href="#cicd-pipelines" aria-hidden="true" class="anchor" id="cicd-pipelines"></a>CI/CD Pipelines</h2>
+<h3><a href="#release-workflow-releaseyml" aria-hidden="true" class="anchor" id="release-workflow-releaseyml"></a>Release workflow (<code>release.yml</code>)</h3>
+<p><strong>Trigger:</strong> Push to <code>main</code> branch, excluding documentation-only changes
+(<code>*.md</code>, <code>LICENSE</code>, <code>AGENTS.md</code>).</p>
+<p><strong>Runner:</strong> <code>ubuntu-latest</code></p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>
+<p>Checkout the repository</p>
+</li>
+<li>
+<p>Install build dependencies (<code>build-essential</code>, <code>debhelper</code>, <code>ruby</code>)</p>
+</li>
+<li>
+<p>Extract the <code>VERSION</code> from <code>Makefile</code></p>
+</li>
+<li>
+<p>Check whether a git tag for this version already exists — if so, skip the release</p>
+</li>
+<li>
+<p>Build and test (<code>make check</code>)</p>
+</li>
+<li>
+<p>Build source and binary tarballs (<code>make dist bdist</code>)</p>
+</li>
+<li>
+<p>Build Debian packages (<code>dpkg-buildpackage -us -uc -b</code>)</p>
+</li>
+<li>
+<p>Create an annotated git tag (<code>vX.Y.Z</code>)</p>
+</li>
+<li>
+<p>Create a GitHub Release with auto-generated notes, attaching:</p>
+<ul>
+<li>Source tarball</li>
+<li>Binary tarball</li>
+<li><code>.deb</code> packages</li>
+</ul>
+</li>
+</ol>
+<p><strong>Concurrency:</strong> The <code>release</code> group ensures only one release runs at a time;
+in-progress releases are not cancelled.</p>
+<h3><a href="#github-pages-workflow-update-pagesyml" aria-hidden="true" class="anchor" id="github-pages-workflow-update-pagesyml"></a>GitHub Pages workflow (<code>update-pages.yml</code>)</h3>
+<p><strong>Trigger:</strong> Push to <code>main</code> affecting <code>README.md</code>, <code>LICENSE</code>, or
+<code>code_of_conduct.md</code>; also available via manual <code>workflow_dispatch</code>.</p>
+<p><strong>Runner:</strong> <code>ubuntu-latest</code></p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>Checkout the <code>gh-pages</code> branch</li>
+<li>Fetch and overlay <code>README.md</code>, <code>LICENSE</code>, and <code>code_of_conduct.md</code> from <code>main</code></li>
+<li>If files changed, set up Ruby 3.3 and build the site (<code>bundle exec rake compile</code>)</li>
+<li>Commit and push the updated <code>gh-pages</code> branch</li>
+</ol>
+<h2><a href="#cicd-variables" aria-hidden="true" class="anchor" id="cicd-variables"></a>CI/CD Variables</h2>
+<h3><a href="#release-workflow" aria-hidden="true" class="anchor" id="release-workflow"></a>Release workflow</h3>
+<table>
+<thead>
+<tr>
+<th>Variable / Secret</th>
+<th>Type</th>
+<th>Description</th>
+<th>Used In</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>secrets.GITHUB_TOKEN</code></td>
+<td>secret</td>
+<td>Automatic GitHub token for creating releases and tags</td>
+<td><code>release.yml</code> (Create tag, Create GitHub Release steps)</td>
+</tr>
+</tbody>
+</table>
+<p>No custom secrets or repository variables are required.</p>
+<h2><a href="#packaging" aria-hidden="true" class="anchor" id="packaging"></a>Packaging</h2>
+<h3><a href="#debian" aria-hidden="true" class="anchor" id="debian"></a>Debian</h3>
+<p>The <code>debian/</code> directory provides packaging metadata for building <code>.deb</code> packages:</p>
+<ul>
+<li><strong><code>libmkhpack1</code></strong> — runtime package containing <code>libmkhpack.so.*</code></li>
+<li><strong><code>libmkhpack-dev</code></strong> — development package containing headers, static library,
+development symlink, and pkg-config file</li>
+</ul>
+<p>Key files:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>debian/control</code></td>
+<td>Package metadata and dependencies</td>
+</tr>
+<tr>
+<td><code>debian/rules</code></td>
+<td>Build rules (delegates to <code>make lib</code>, <code>make install</code>, <code>make check</code>)</td>
+</tr>
+<tr>
+<td><code>debian/changelog</code></td>
+<td>Debian changelog</td>
+</tr>
+<tr>
+<td><code>debian/copyright</code></td>
+<td>Machine-readable copyright in DEP-5 format</td>
+</tr>
+<tr>
+<td><code>debian/libmkhpack1.install</code></td>
+<td>File list for the runtime package</td>
+</tr>
+<tr>
+<td><code>debian/libmkhpack-dev.install</code></td>
+<td>File list for the development package</td>
+</tr>
+<tr>
+<td><code>debian/source/format</code></td>
+<td><code>3.0 (native)</code></td>
+</tr>
+</tbody>
+</table>
+<h3><a href="#rpm" aria-hidden="true" class="anchor" id="rpm"></a>RPM</h3>
+<p><code>mkhpack.spec</code> provides an RPM spec file with <code>mkhpack</code> and <code>mkhpack-devel</code>
+sub-packages. Build requires: <code>gcc</code>, <code>make</code>, <code>ruby</code>.</p>
+<h3><a href="#tarballs" aria-hidden="true" class="anchor" id="tarballs"></a>Tarballs</h3>
+<ul>
+<li><strong>Source tarball</strong> (<code>make dist</code>): includes all source files needed to build
+from scratch</li>
+<li><strong>Binary tarball</strong> (<code>make bdist</code>): includes pre-built shared and static
+libraries, headers, and the pkg-config file</li>
+</ul>
+<h2><a href="#pre-deployment-checklist" aria-hidden="true" class="anchor" id="pre-deployment-checklist"></a>Pre-Deployment Checklist</h2>
+<ol>
+<li>Update <code>VERSION</code> in <code>Makefile</code> if releasing a new version</li>
+<li>Update <code>debian/changelog</code> with the new version entry</li>
+<li>Run <code>make check</code> locally to verify all tests pass</li>
+<li>Merge the <code>development</code> branch into <code>main</code></li>
+<li>Push to <code>main</code> — the release workflow handles the rest</li>
+</ol>
+<h2><a href="#rollback" aria-hidden="true" class="anchor" id="rollback"></a>Rollback</h2>
+<p>To rollback a release:</p>
+<ol>
+<li>Delete the GitHub Release via the web UI or <code>gh release delete vX.Y.Z</code></li>
+<li>Delete the git tag: <code>git push origin :refs/tags/vX.Y.Z</code></li>
+<li>Revert the merge commit on <code>main</code> if necessary</li>
+<li>Push to <code>main</code> — if the <code>VERSION</code> still exists as a tag, the workflow will skip</li>
+</ol>

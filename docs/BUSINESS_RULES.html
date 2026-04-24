@@ -1,0 +1,67 @@
+---
+layout: default
+title: "Business Rules"
+---
+<h1><a href="#business-rules" aria-hidden="true" class="anchor" id="business-rules"></a>Business Rules</h1>
+<p>The encoding and decoding rules in mkhpack are derived directly from
+<a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a>. They are not
+application-specific business rules but rather protocol-level constraints
+mandated by the specification.</p>
+<h2><a href="#integer-encoding-rfc-7541-51" aria-hidden="true" class="anchor" id="integer-encoding-rfc-7541-51"></a>Integer Encoding (RFC 7541 §5.1)</h2>
+<h3><a href="#rule-prefix-width-must-be-between-1-and-8-bits" aria-hidden="true" class="anchor" id="rule-prefix-width-must-be-between-1-and-8-bits"></a>Rule: Prefix width must be between 1 and 8 bits</h3>
+<p><strong>Description:</strong> The <code>prefix_bits</code> parameter must be in the range 1–8 inclusive.
+Values outside this range are rejected with <code>ERROR_BAD_PREFIX</code>. This corresponds
+to the valid prefix sizes defined in RFC 7541 §5.1.</p>
+<p><strong>Implementation:</strong> <code>mkhpack_encode_int()</code> and <code>mkhpack_decode_int()</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Related Constants:</strong> <code>ERROR_BAD_PREFIX = 4</code> in <code>src/mkhpack_errors.h</code></p>
+<h3><a href="#rule-prefix-high-bits-must-not-overlap-the-encoded-value" aria-hidden="true" class="anchor" id="rule-prefix-high-bits-must-not-overlap-the-encoded-value"></a>Rule: Prefix high bits must not overlap the encoded value</h3>
+<p><strong>Description:</strong> When encoding, the <code>prefix</code> byte must have all bits in the
+low <code>prefix_bits</code> positions set to zero. If any of those bits are set, the
+function returns <code>ERROR_BAD_PREFIX</code>. This ensures the caller has correctly
+partitioned the byte between the HPACK integer and any preceding flags.</p>
+<p><strong>Implementation:</strong> <code>mkhpack_encode_int()</code> in <code>src/mkhpack.c</code>, via the
+<code>PREFIX_MASK()</code> macro check</p>
+<h3><a href="#rule-integer-overflow-detection-on-decode" aria-hidden="true" class="anchor" id="rule-integer-overflow-detection-on-decode"></a>Rule: Integer overflow detection on decode</h3>
+<p><strong>Description:</strong> During decoding, if a continuation byte would cause the
+accumulated integer to exceed <code>UINT64_MAX</code>, the function returns
+<code>ERROR_OVERFLOW</code> rather than silently wrapping. This protects callers from
+processing corrupted or malicious input.</p>
+<p><strong>Implementation:</strong> <code>mkhpack_decode_int()</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Related Constants:</strong> <code>MAX_MKHPACK_INT</code> (defined as <code>UINT64_C(-1)</code>) in <code>src/mkhpack.c</code></p>
+<h2><a href="#huffman-coding-rfc-7541-52-appendix-b" aria-hidden="true" class="anchor" id="huffman-coding-rfc-7541-52-appendix-b"></a>Huffman Coding (RFC 7541 §5.2, Appendix B)</h2>
+<h3><a href="#rule-eos-symbol-is-invalid-in-encoded-data" aria-hidden="true" class="anchor" id="rule-eos-symbol-is-invalid-in-encoded-data"></a>Rule: EOS symbol is invalid in encoded data</h3>
+<p><strong>Description:</strong> The Huffman table includes an EOS (End of String) symbol at
+index 256. If this symbol is encountered during decoding, the function returns
+<code>ERROR_EOS</code>. Per RFC 7541 §5.2, a Huffman-encoded string literal containing
+the EOS symbol must be treated as a decoding error.</p>
+<p><strong>Implementation:</strong> <code>huffman_decode()</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Related Constants:</strong> <code>ERROR_EOS = 3</code> in <code>src/mkhpack_errors.h</code></p>
+<h3><a href="#rule-padding-must-consist-of-eos-prefix-bits" aria-hidden="true" class="anchor" id="rule-padding-must-consist-of-eos-prefix-bits"></a>Rule: Padding must consist of EOS prefix bits</h3>
+<p><strong>Description:</strong> When a Huffman-encoded string does not end on a byte boundary,
+the remaining bits are padded with the most significant bits of the EOS symbol
+(i.e. all <code>1</code> bits). The decoder validates this by checking that the trailing
+bits of the final byte match the expected padding mask. Invalid padding results
+in <code>ERROR_TRUNCATED</code>.</p>
+<p><strong>Implementation:</strong> <code>huffman_decode()</code> in <code>src/mkhpack.c</code> (the <code>mask</code> variable
+tracks the expected padding pattern; the <code>(byte &amp; mask) == mask</code> check validates it)</p>
+<h3><a href="#rule-encoder-pads-with-eos-bits" aria-hidden="true" class="anchor" id="rule-encoder-pads-with-eos-bits"></a>Rule: Encoder pads with EOS bits</h3>
+<p><strong>Description:</strong> When the Huffman encoder finishes and there are fewer than 8
+bits remaining in the output queue, it pads the final byte by shifting the
+queued bits left and filling the remaining positions with <code>1</code> bits (the EOS
+prefix). This is the encoding counterpart to the padding validation rule above.</p>
+<p><strong>Implementation:</strong> <code>huffman_encode()</code> in <code>src/mkhpack.c</code></p>
+<h2><a href="#string-encoding-rfc-7541-52" aria-hidden="true" class="anchor" id="string-encoding-rfc-7541-52"></a>String Encoding (RFC 7541 §5.2)</h2>
+<h3><a href="#rule-automatic-huffman-optimisation" aria-hidden="true" class="anchor" id="rule-automatic-huffman-optimisation"></a>Rule: Automatic Huffman optimisation</h3>
+<p><strong>Description:</strong> <code>mkhpack_encode_str()</code> compares the Huffman-encoded length
+(via <code>huffman_length()</code>) against the raw string length. If Huffman encoding
+produces a shorter result, it is used; otherwise the string is sent raw. This
+implements the recommendation in RFC 7541 §5.2 that an encoder should use
+whichever representation is more compact.</p>
+<p><strong>Implementation:</strong> <code>mkhpack_encode_str()</code> in <code>src/mkhpack.c</code></p>
+<h3><a href="#rule-huffman-flag-in-string-length-prefix" aria-hidden="true" class="anchor" id="rule-huffman-flag-in-string-length-prefix"></a>Rule: Huffman flag in string length prefix</h3>
+<p><strong>Description:</strong> The high bit (0x80) of the string length's first byte indicates
+whether the string payload is Huffman-encoded. <code>mkhpack_encode_raw_str()</code> clears
+this bit; <code>mkhpack_encode_huff_str()</code> sets it. <code>mkhpack_decode_str()</code> reads this
+bit to determine how to decode the payload.</p>
+<p><strong>Implementation:</strong> <code>mkhpack_encode_str_()</code> (static helper), <code>mkhpack_decode_str()</code> in <code>src/mkhpack.c</code></p>
+<p><strong>Related Constants:</strong> <code>HUFFMAN_FLAG = 0x80</code>, <code>HUFFMAN_PREFIX = 7</code> in <code>src/mkhpack.c</code></p>
