@@ -1,0 +1,56 @@
+- title: Repositories
+  url: https://github.com/phluid61/
+
+- title: Internet Drafts
+  url: /internet-drafts/
+  items:
+    - title: Internet Drafts Index
+      url: /internet-drafts/
+    - divider: true
+    - title: file URI Scheme
+      url: /internet-drafts/file-scheme/
+    - title: HTTP/2 Encoded Data
+      url: /internet-drafts/http2-encoded-data/
+    - title: HTTP/2 "Dropped Frame" Frame
+      url: /internet-drafts/http2-nak-frame/
+    - title: HTTP/2 Segments
+      url: /internet-drafts/http2-segments/
+      struck: true
+    - title: The file URI Scheme
+      url: /internet-drafts/rfc8089-bis-core/
+    - title: Using the file URI Scheme
+      url: /internet-drafts/rfc8089-bis-info/
+
+- title: Web Stuff
+  items:
+    - title: ruby-h2
+      url: /ruby-h2/
+    - title: mk-hpack
+      url: /mk-hpack/
+    - title: HTTP/2 Experiments
+      url: /http2-experimental/
+
+- title: Ruby Gems
+  items:
+    - title: Matty's Ultimate Gem
+      url: /mug/
+    - title: Symbol[]
+      url: /symbol_lookup-gem/
+    - title: Time.timestamp
+      url: /timestamp-gem/
+    - title: file-uri
+      url: /file-uri/
+    - title: hashmap
+      url: /hashmap-gem/
+    - title: DOI Library (libdoi)
+      url: /libdoi/
+    - title: MemoryProfiler
+      url: /memory-profiler-gem/
+    - title: ThreadPuddle
+      url: /threadpuddle-gem/
+    - title: try_convert
+      url: /try_convert/
+    - title: to_h
+      url: /to_h-gem/
+    - title: tauday
+      url: /tauday-gem/

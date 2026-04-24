@@ -1,0 +1,4 @@
+remote_theme: phluid61/phluid61.github.io
+
+plugins:
+  - jekyll-remote-theme
