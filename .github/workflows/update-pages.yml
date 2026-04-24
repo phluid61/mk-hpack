@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [README.md, LICENSE, code_of_conduct.md]
+    paths: ['README.md', 'LICENSE', 'code_of_conduct.md', 'docs/*.md']
 
 permissions:
   contents: write
@@ -27,6 +27,7 @@ jobs:
         run: |
           git fetch origin main
           git checkout origin/main -- README.md LICENSE code_of_conduct.md
+          git checkout origin/main -- docs/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No changes detected"
@@ -43,13 +44,72 @@ jobs:
 
       - name: Build site
         if: steps.sync.outputs.changed == 'true'
-        run: bundle exec rake compile
+        run: |
+          bundle exec ruby <<'RUBY'
+          require 'commonmarker'
+          require 'cgi'
+          require 'fileutils'
+
+          HEAD = File.read('head')
+          TAIL = File.read('tail')
+
+          def md_to_html(text)
+            Commonmarker.to_html(text, options: { render: { unsafe: true, hardbreaks: false } })
+          end
+
+          def rewrite_links(html)
+            # README.md -> index.html (relative links only, with optional anchor)
+            html = html.gsub(/href="(?!https?:\/\/)([^"]*?)README\.md(#[^"]*)?"/) { %{href="#{$1}index.html#{$2}"} }
+            # Other .md -> .html (relative links only, with optional anchor)
+            html = html.gsub(/href="(?!https?:\/\/)([^"]*?)\.md(#[^"]*)?"/) { %{href="#{$1}.html#{$2}"} }
+            html
+          end
+
+          def extract_title(md)
+            case md
+            when /^#\s+(.+)$/  then $1.strip
+            when /^(.+)\n=+\s*$/ then $1.strip
+            else nil
+            end
+          end
+
+          def build_page(md_file, html_file, title: nil, extra_html: nil)
+            md = File.read(md_file)
+            title ||= extract_title(md)
+            body = rewrite_links(md_to_html(md))
+            body << extra_html if extra_html
+            head = HEAD.dup
+            if title
+              head = head.sub('<title>mk-hpack</title>',
+                "<title>#{CGI.escapeHTML(title)} \u2014 mk-hpack</title>")
+            end
+            FileUtils.mkdir_p(File.dirname(html_file))
+            File.write(html_file, head + body + TAIL)
+            puts "Built: #{html_file}"
+          end
+
+          # index.html: README + LICENSE (pre-formatted)
+          license_html = '<pre id="license" class="no-highlight">' +
+            CGI.escapeHTML(File.read('LICENSE')) + '</pre>'
+          build_page('README.md', 'index.html', extra_html: license_html)
+
+          # code_of_conduct.html
+          build_page('code_of_conduct.md', 'code_of_conduct.html')
+
+          # docs/ pages
+          Dir.glob('docs/*.md').sort.each do |md_file|
+            basename = File.basename(md_file, '.md')
+            html_name = (basename == 'README') ? 'index' : basename
+            build_page(md_file, "docs/#{html_name}.html")
+          end
+          RUBY
 
       - name: Commit changes
         if: steps.sync.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md LICENSE code_of_conduct.md index.html
+          git add README.md LICENSE code_of_conduct.md index.html code_of_conduct.html
+          git add docs/ 2>/dev/null || true
           git commit -m "Sync content files from main and rebuild"
           git push
