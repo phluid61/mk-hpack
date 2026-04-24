@@ -51,12 +51,12 @@ These examples use static linking:
 #include "lib/mkhpack.h"
 
 MKHPACK_INT_T i = 987; /* number to encode */
-size_t  nbits = 6;   /* number of bits to occupy in the first byte */
-uint8_t pbits = 0x40; /* initial value of the first byte */
+size_t  nbits = 6;     /* number of bits to occupy in the first byte */
+uint8_t pbits = 0x40;  /* initial value of the first byte */
 
 #define BUFFER_SIZE 4321
 uint8_t buffer[BUFFER_SIZE];
-size_t  written;      /* will hold the number of bytes written */
+size_t  written;       /* will hold the number of bytes written */
 
 int error = mkhpack_encode_int(i, nbits, pbits, buffer, BUFFER_SIZE, &written);
 if (error) {
@@ -73,11 +73,11 @@ if (error) {
 
 #define CODE_LENGTH 10
 uint8_t code[CODE_LENGTH] = "\xFF\xF2\x81\xC0\x80\x01XYZ";
-size_t  consumed;     /* will hold the number of bytes read */
-size_t  nbits = 6;    /* number of bits to occupy in the first byte */
+size_t  consumed;      /* will hold the number of bytes read */
+size_t  nbits = 6;     /* number of bits to occupy in the first byte */
 
-MKHPACK_INT_T i;        /* decoded integer */
-uint8_t pbits;        /* will hold remainder of the first byte */
+MKHPACK_INT_T i;       /* decoded integer */
+uint8_t pbits;         /* will hold remainder of the first byte */
 
 int error = mkhpack_decode_int(code, CODE_LENGTH, &consumed, nbits, &i, &pbits);
 if (error) {
