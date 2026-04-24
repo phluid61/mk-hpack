@@ -76,7 +76,7 @@ in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 </span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdint.h</span><span style="color:#c0c5ce;">&gt;
 </span><span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">lib/mkhpack.h</span><span style="color:#c0c5ce;">&quot;
 </span><span style="color:#c0c5ce;">
-</span><span style="color:#c0c5ce;">HPACK_INT_T i = </span><span style="color:#d08770;">987</span><span style="color:#c0c5ce;">; </span><span style="color:#65737e;">/* number to encode */
+</span><span style="color:#c0c5ce;">MKHPACK_INT_T i = </span><span style="color:#d08770;">987</span><span style="color:#c0c5ce;">; </span><span style="color:#65737e;">/* number to encode */
 </span><span style="color:#c0c5ce;">size_t  nbits = </span><span style="color:#d08770;">6</span><span style="color:#c0c5ce;">;   </span><span style="color:#65737e;">/* number of bits to occupy in the first byte */
 </span><span style="color:#c0c5ce;">uint8_t pbits = </span><span style="color:#d08770;">0x40</span><span style="color:#c0c5ce;">; </span><span style="color:#65737e;">/* initial value of the first byte */
 </span><span style="color:#c0c5ce;">
@@ -100,7 +100,7 @@ in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 </span><span style="color:#c0c5ce;">size_t  consumed;     </span><span style="color:#65737e;">/* will hold the number of bytes read */
 </span><span style="color:#c0c5ce;">size_t  nbits = </span><span style="color:#d08770;">6</span><span style="color:#c0c5ce;">;    </span><span style="color:#65737e;">/* number of bits to occupy in the first byte */
 </span><span style="color:#c0c5ce;">
-</span><span style="color:#c0c5ce;">HPACK_INT_T i;        </span><span style="color:#65737e;">/* decoded integer */
+</span><span style="color:#c0c5ce;">MKHPACK_INT_T i;        </span><span style="color:#65737e;">/* decoded integer */
 </span><span style="color:#c0c5ce;">uint8_t pbits;        </span><span style="color:#65737e;">/* will hold remainder of the first byte */
 </span><span style="color:#c0c5ce;">
 </span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;"> error = </span><span style="color:#8fa1b3;">mkhpack_decode_int</span><span style="color:#c0c5ce;">(code, CODE_LENGTH, &amp;consumed, nbits, &amp;i, &amp;pbits);
@@ -151,8 +151,8 @@ in <a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541</a></p>
 </span></code></pre>
 <h2><a href="#contributor-code-of-conduct" aria-hidden="true" class="anchor" id="contributor-code-of-conduct"></a>Contributor Code of Conduct</h2>
 <p>This repository is subject to a <a href="code_of_conduct.md">Contributor Code of Conduct</a>
-adapted from the <a href="http://contributor-covenant.org">Contributor Covenant</a>, version 2.1, available at
-<a href="http://contributor-covenant.org/version/2/1">http://contributor-covenant.org/version/2/1</a></p>
+adapted from the <a href="https://www.contributor-covenant.org">Contributor Covenant</a>, version 3.0, available at
+<a href="https://www.contributor-covenant.org/version/3/0/">https://www.contributor-covenant.org/version/3/0/</a></p>
 <h2><a href="#licence" aria-hidden="true" class="anchor" id="licence"></a>Licence</h2>
 <p>This project is licensed under the ISC licence. See <a href="LICENSE">LICENSE</a>
 for details.</p>
