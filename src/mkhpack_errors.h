@@ -4,4 +4,5 @@
 #define ERROR_TRUNCATED  2
 #define ERROR_EOS        3
 #define ERROR_BAD_PREFIX 4
+#define ERROR_BAD_INDEX  5
 

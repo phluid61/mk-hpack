@@ -1,6 +1,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include "mkhpack_errors.h"
 #include "mkhpack.h"
@@ -361,4 +362,124 @@ size_t huffman_length(
 		result += HuffmanCodes[*str].size; str++; bytesize--;
 	}
 	return (result / 8);
+}
+
+
+/* ================================================================
+ * Table layer — #include'd as a unity build
+ * ================================================================ */
+
+#include "mkhpack_str.inc.c"
+#include "mkhpack_header.inc.c"
+#include "mkhpack_header_table.inc.c"
+#include "mkhpack_header_list.inc.c"
+#include "mkhpack_static_table.inc.c"
+#include "mkhpack_decode_context.inc.c"
+#include "mkhpack_encode_context.inc.c"
+
+
+/* ================================================================
+ * Public API wrappers
+ * ================================================================ */
+
+mkhpack_decode_context *mkhpack_decode_context_new(size_t max_table_size) {
+	mkhpack_decode_context *ctx = (mkhpack_decode_context *)calloc(1, sizeof(*ctx));
+	if (ctx) mkhpack_decode_context_init(ctx, max_table_size);
+	return ctx;
+}
+
+void mkhpack_decode_context_free(mkhpack_decode_context *ctx) {
+	if (!ctx) return;
+	mkhpack_decode_context_destroy(ctx);
+	free(ctx);
+}
+
+int mkhpack_decode(
+	mkhpack_decode_context *ctx,
+	uint8_t *bytes, size_t n, size_t *consumed,
+	mkhpack_header_list **out
+) {
+	mkhpack_header_list *list = (mkhpack_header_list *)calloc(1, sizeof(*list));
+	if (!list) return ERROR_OVERFLOW;
+	mkhpack_header_list_init(list);
+
+	int err = mkhpack_decode_block(ctx, bytes, n, consumed, list);
+	if (err) {
+		mkhpack_header_list_free(list);
+		*out = NULL;
+		return err;
+	}
+	*out = list;
+	return 0;
+}
+
+void mkhpack_header_list_free(mkhpack_header_list *list) {
+	if (!list) return;
+	mkhpack_header_list_destroy(list);
+	free(list);
+}
+
+size_t mkhpack_header_list_count(const mkhpack_header_list *list) {
+	return list->length;
+}
+
+const uint8_t *mkhpack_header_name(
+	const mkhpack_header_list *list, size_t i, size_t *len
+) {
+	if (i >= list->length) { if (len) *len = 0; return NULL; }
+	if (len) *len = list->headers[i].name.length;
+	return list->headers[i].name.ptr;
+}
+
+const uint8_t *mkhpack_header_value(
+	const mkhpack_header_list *list, size_t i, size_t *len
+) {
+	if (i >= list->length) { if (len) *len = 0; return NULL; }
+	if (len) *len = list->headers[i].value.length;
+	return list->headers[i].value.ptr;
+}
+
+
+mkhpack_encode_context *mkhpack_encode_context_new(size_t max_table_size) {
+	mkhpack_encode_context *ctx = (mkhpack_encode_context *)calloc(1, sizeof(*ctx));
+	if (ctx) mkhpack_encode_context_init(ctx, max_table_size);
+	return ctx;
+}
+
+void mkhpack_encode_context_free(mkhpack_encode_context *ctx) {
+	if (!ctx) return;
+	mkhpack_encode_context_destroy(ctx);
+	free(ctx);
+}
+
+int mkhpack_encode(
+	mkhpack_encode_context *ctx,
+	const uint8_t *name, size_t name_len,
+	const uint8_t *value, size_t value_len,
+	uint8_t *buff, size_t n, size_t *produced
+) {
+	mkhpack_str nm = { name_len, (uint8_t *)name };
+	mkhpack_str val = { value_len, (uint8_t *)value };
+	return mkhpack_encode_header(ctx, &nm, &val, buff, n, produced);
+}
+
+int mkhpack_encode_sensitive(
+	mkhpack_encode_context *ctx,
+	const uint8_t *name, size_t name_len,
+	const uint8_t *value, size_t value_len,
+	uint8_t *buff, size_t n, size_t *produced
+) {
+	mkhpack_str nm = { name_len, (uint8_t *)name };
+	mkhpack_str val = { value_len, (uint8_t *)value };
+	return mkhpack_encode_header_never_indexed(ctx, &nm, &val, buff, n, produced);
+}
+
+int mkhpack_encode_table_update(
+	mkhpack_encode_context *ctx,
+	size_t new_max,
+	uint8_t *buff, size_t n, size_t *produced
+) {
+	int err = mkhpack_encode_table_size_update(new_max, buff, n, produced);
+	if (!err) mkhpack_header_table_set_max_size(&ctx->table, new_max);
+	return err;
 }

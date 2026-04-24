@@ -34,7 +34,14 @@ HUFF_CODES = $(SRCDIR)/huffman_codes.inc
 mkhpack_LIBNAME = mkhpack
 mkhpack_HEADER  = $(SRCDIR)/mkhpack.h
 mkhpack_SOURCE  = $(SRCDIR)/mkhpack.c
-mkhpack_DEPS    = $(HUFF_CODES)
+mkhpack_DEPS    = $(HUFF_CODES) \
+                  $(SRCDIR)/mkhpack_str.inc.c \
+                  $(SRCDIR)/mkhpack_header.inc.c \
+                  $(SRCDIR)/mkhpack_header_table.inc.c \
+                  $(SRCDIR)/mkhpack_header_list.inc.c \
+                  $(SRCDIR)/mkhpack_static_table.inc.c \
+                  $(SRCDIR)/mkhpack_decode_context.inc.c \
+                  $(SRCDIR)/mkhpack_encode_context.inc.c
 
 # Lists ...
 OBJECTS      :=
@@ -102,6 +109,10 @@ SDISTFILE=$(DIST)-src.tar.gz
 BDISTFILE=$(DIST).tar.gz
 
 SDIST_FILES = src/mkhpack.c src/mkhpack.h src/mkhpack_errors.h \
+              src/mkhpack_str.inc.c src/mkhpack_header.inc.c \
+              src/mkhpack_header_table.inc.c src/mkhpack_header_list.inc.c \
+              src/mkhpack_static_table.inc.c \
+              src/mkhpack_decode_context.inc.c src/mkhpack_encode_context.inc.c \
               huffman_codes.rb str.h mkhpack.pc.in \
               Makefile Makefile.inc LICENSE README.md
 
