@@ -44,8 +44,6 @@
       url: /hashmap-gem/
     - title: DOI Library (libdoi)
       url: /libdoi/
-    - title: MemoryProfiler
-      url: /memory-profiler-gem/
     - title: ThreadPuddle
       url: /threadpuddle-gem/
     - title: try_convert
