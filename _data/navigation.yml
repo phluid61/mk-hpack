@@ -34,21 +34,23 @@
   items:
     - title: Matty's Ultimate Gem
       url: /mug/
-    - title: Symbol[]
-      url: /symbol_lookup-gem/
-    - title: Time.timestamp
-      url: /timestamp-gem/
+    - title: Base45
+      url: /base45-gem/
+    - title: DOI Library (libdoi)
+      url: /libdoi/
     - title: file-uri
       url: /file-uri/
     - title: hashmap
       url: /hashmap-gem/
-    - title: DOI Library (libdoi)
-      url: /libdoi/
-    - title: ThreadPuddle
-      url: /threadpuddle-gem/
-    - title: try_convert
-      url: /try_convert/
-    - title: to_h
-      url: /to_h-gem/
+    - title: Symbol[]
+      url: /symbol_lookup-gem/
     - title: tauday
       url: /tauday-gem/
+    - title: ThreadPuddle
+      url: /threadpuddle-gem/
+    - title: Time.timestamp
+      url: /timestamp-gem/
+    - title: to_h
+      url: /to_h-gem/
+    - title: try_convert
+      url: /try_convert/
