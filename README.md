@@ -157,7 +157,7 @@ if (error) {
 We require all contributors to comply with the [Developer Certificate of Origin](https://developercertificate.org/). This ensures that all contributions are properly licensed and attributed.
 
 
-## Contributor Code of Conduct
+### Contributor Code of Conduct
 
 This repository is subject to a [Contributor Code of Conduct](code_of_conduct.md)
 adapted from the [Contributor Covenant][cc], version 3.0, available at
